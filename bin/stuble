@@ -6,7 +6,7 @@ use Emsifa\Stuble\Commands\ListCommand;
 use Emsifa\Stuble\Stuble;
 use Rakit\Console\App;
 
-foreach ([__DIR__.'/../autoload.php', __DIR__.'/../vendor/autoload.php'] as $autoloadFile) {
+foreach ([__DIR__.'/../../../autoload.php', __DIR__.'/../vendor/autoload.php'] as $autoloadFile) {
     if (file_exists($autoloadFile)) {
         require $autoloadFile;
     }
@@ -14,8 +14,8 @@ foreach ([__DIR__.'/../autoload.php', __DIR__.'/../vendor/autoload.php'] as $aut
 
 if (!class_exists(Stuble::class)) {
     echo "Whops! no Stuble class detected." . PHP_EOL;
-    echo "1) Make sure you have composer installed by typing 'composer'.";
-    echo "2) Install stuble as global package by typing 'composer global require emsifa/stuble'.";
+    echo "1) Make sure you have composer installed by typing 'composer'.".PHP_EOL;
+    echo "2) Install stuble as global package by typing 'composer global require emsifa/stuble'.".PHP_EOL;
     exit;
 }
 
