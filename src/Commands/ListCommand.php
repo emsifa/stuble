@@ -53,7 +53,7 @@ class ListCommand extends StubleCommand
             print(PHP_EOL);
             $this->writeln("[{$dir}]", "green");
             foreach ($files as $file) {
-                $this->writeln("- {$file}", "blue");
+                $this->writeln("- {$file}");
             }
         }
     }
