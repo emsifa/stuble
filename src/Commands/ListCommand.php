@@ -77,7 +77,7 @@ class ListCommand extends StubleCommand
         }
 
         if ($here || $all) {
-            $files = array_merge($files, $this->getStubsFilesFromDirectory($workingPath));
+            $files = array_merge($files, $this->getStubsFilesFromDirectory($workingPath.'/stubs'));
         }
 
         return $files;
@@ -94,6 +94,15 @@ class ListCommand extends StubleCommand
     {
         if (!$baseDir) {
             $baseDir = $dir;
+        }
+
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        if (!is_readable($dir)) {
+            $this->writeln("[warning] Cannot read directory '{$dir}'", "yellow");
+            return [];
         }
 
         $files = array_diff(scandir($dir), ['.', '..']);
