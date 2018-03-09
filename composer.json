@@ -16,5 +16,6 @@
         "psr-4": {
             "Emsifa\\Stuble\\": "src/"
         }
-    }
+    },
+    "bin": ["bin/stuble"]
 }
