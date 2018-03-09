@@ -9,7 +9,7 @@ use Rakit\Console\Command;
 class CreateCommand extends StubleCommand
 {
 
-    protected $signature = "create {stub}";
+    protected $signature = "create {stub} {--d|dump::Dump render results.}";
 
     protected $description = "Create file from given stub.";
 
@@ -29,10 +29,19 @@ class CreateCommand extends StubleCommand
         $this->writeln("# FILL PARAMETERS", "cyan");
         $paramsValues = $this->askParams($stubles);
 
-        $this->writeln("# SAVING FILES", "cyan");
-        foreach ($stubles as $stuble) {
-            $result = $stuble->render($paramsValues);
-            $this->askToSave($result, $stuble);
+        $dump = $this->option('dump');
+
+        if (!$dump) {
+            $this->writeln("# SAVING FILES", "cyan");
+            foreach ($stubles as $stuble) {
+                $result = $stuble->render($paramsValues);
+                $this->askToSave($result, $stuble);
+            }
+        } else {
+            foreach ($stubles as $stuble) {
+                $result = $stuble->render($paramsValues);
+                $this->dumpResult($result, $stuble);
+            }
         }
     }
 
@@ -52,6 +61,21 @@ class CreateCommand extends StubleCommand
 
         $this->save($dest, $content);
         $this->writeln("+ File '{$savePath}' saved!", "green");
+    }
+
+    protected function dumpResult(Result $result, Stuble $stuble)
+    {
+        $params = $result->getParams();
+        $stub = $stuble->filename;
+
+        $len = max(array_map(function ($k) { return strlen($k); }, array_keys($params)));
+
+        $this->writeln('');
+        $this->writeln("[{$stub}]".PHP_EOL, "green");
+        foreach ($params as $key => $value) {
+            $this->writeln(str_pad($key, $len, " ", STR_PAD_RIGHT)." : {$value}", "blue");
+        }
+        $this->writeln($result);
     }
 
     protected function makeStuble(string $file)
