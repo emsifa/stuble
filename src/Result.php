@@ -34,6 +34,11 @@ class Result
         return isset($this->params[$key]) ? $this->params[$key] : null;
     }
 
+    public function getParams()
+    {
+        return $this->params;
+    }
+
     public function __toString()
     {
         return $this->getContent();
