@@ -21,7 +21,7 @@ composer global require emsifa/stuble:dev-master
 
 ## USAGE EXAMPLE
 
-Before we get started, you need to know that stuble scan stubs file from 2 locations.
+Before we get started, you need to know that stuble scan stubs files from 2 locations.
 
 1. Local source: `stubs` directory wherever you want to use `stuble` command.
 2. Global source: path that defined in STUBS_PATH variable.
