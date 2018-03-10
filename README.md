@@ -70,10 +70,10 @@ then ask again where to put result file.
 Try example above, look at the result. You would realize things like:
 
 * First word wrapped by `{?...?}` is a parameter that stuble would ask.
-* `[App\Models]` is default value.
-* `pascal`, `snake`, `plural` are filters that modify your paremeter value.
+* Words wrapped by `[...]` like `App\Models` is parameter default value.
+* `pascal`, `snake`, `plural` are filters that modify your parameter value.
 * Parameter and filters separated by `::`.
-* Every filters separater by `.` (like `snake.plural`).
+* For multiple filters. You can use `.` to separate them like `snake.plural`.
 
 ## THINGS YOU NEED TO KNOW
 
