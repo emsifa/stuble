@@ -129,6 +129,8 @@ class Stuble
 
         $stub = $this->stub;
         foreach ($params as $param) {
+            if ($param['is_arg']) continue;
+
             $value = $param['value'];
             foreach ($param['filters'] as $filter) {
                 $value = $this->applyFilter($filter['key'], $value, $this->resolveFilterArgs($filter['args'], $paramsValues));
@@ -153,7 +155,30 @@ class Stuble
 
     protected function parseParams(string $stub) : array
     {
-        return Parser::parse($stub);
+        $params = Parser::parse($stub);
+
+        $keys = array_unique(array_map(function ($param) {
+            return $param['key'];
+        }, $params));
+
+        foreach ($params as $i => $param) {
+            $params[$i]['is_arg'] = false;
+            foreach ($param['filters'] as $filter) {
+                foreach ($filter['args'] as $arg) {
+                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
+                        $params[] = [
+                            'is_arg' => true,
+                            'key' => $arg['value'],
+                            'value' => '',
+                            'code' => null,
+                            'filters' => []
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $params;
     }
 
     protected function resolveFilterArgs(array $args, array $paramsValues)
