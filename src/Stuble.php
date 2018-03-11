@@ -7,86 +7,22 @@ use Closure;
 class Stuble
 {
 
-    protected static $hasInitializeGlobalFilters = false;
-    protected static $globalFilters = [];
+    use Concerns\FilterUtils;
+    use Concerns\HelperUtils;
 
     protected $stub;
     protected $params;
-    protected $filters = [];
-
-    public static function initializeGlobalFilters()
-    {
-        if (static::$hasInitializeGlobalFilters) {
-            return;
-        }
-
-        $baseFilters = [
-            'lower'     => 'strtolower',
-            'upper'     => 'strtoupper',
-            'ucfirst'   => 'ucfirst',
-            'ucwords'   => 'ucwords',
-            'kebab'     => [Filters::class, 'kebab'],
-            'snake'     => [Filters::class, 'snake'],
-            'camel'     => [Filters::class, 'camel'],
-            'pascal'    => [Filters::class, 'pascal'],
-            'studly'    => [Filters::class, 'studly'],
-            'title'     => [Filters::class, 'title'],
-            'words'     => [Filters::class, 'words'],
-            'plural'    => [Filters::class, 'plural'],
-            'singular'  => [Filters::class, 'singular'],
-            'replace'   => [Filters::class, 'replace'],
-        ];
-
-        foreach ($baseFilters as $key => $filter) {
-            if (!static::hasGlobalFilter($key)) {
-                static::globalFilter($key, $filter);
-            }
-        }
-
-        static::$hasInitializeGlobalFilters = true;
-    }
-
-    public static function globalFilter(string $key, callable $filter)
-    {
-        static::$globalFilters[$key] = $filter;
-    }
-
-    public static function hasGlobalFilter(string $key)
-    {
-        return isset(static::$globalFilters[$key]);
-    }
 
     public function __construct(string $stub)
     {
         static::initializeGlobalFilters();
+        static::initializeGlobalHelpers();
 
         $this->stub = $stub;
         $this->params = $this->parseParams($stub);
 
         $this->filters = static::$globalFilters;
-    }
-
-    public function filter(string $key, callable $filter)
-    {
-        if ($filter instanceof Closure) {
-            $filter = $filter->bindTo($this);
-        }
-
-        $this->filters[$key] = $filter;
-    }
-
-    public function hasFilter(string $key)
-    {
-        return isset($this->filters[$key]);
-    }
-
-    public function applyFilter(string $key, string $value, array $args)
-    {
-        if (!isset($this->filters[$key])) {
-            throw new \RuntimeException("Filter '{$key}' is not defined.");
-        }
-
-        return call_user_func_array($this->filters[$key], array_merge([$value], $args));
+        $this->helpers = static::$globalHelpers;
     }
 
     public function getParams() : array
@@ -94,11 +30,15 @@ class Stuble
         return $this->params;
     }
 
-    public function getParamsValues()
+    public function getParamsValues($includeHelper = true)
     {
         $values = [];
 
         foreach ($this->params as $param) {
+            if (!$includeHelper && $param['type'] == Parser::TYPE_HELPER) {
+                continue;
+            }
+
             if (!isset($values[$param['key']])) {
                 $values[$param['key']] = $param['value'];
             }
@@ -129,11 +69,16 @@ class Stuble
 
         $stub = $this->stub;
         foreach ($params as $param) {
-            if ($param['is_arg']) continue;
+            if ($param['type'] == 'arg') continue;
 
-            $value = $param['value'];
+            if ($param['type'] == Parser::TYPE_HELPER) {
+                $value = $this->applyHelper($param['key'], $this->resolveArgs($param['args'], $paramsValues));
+            } else {
+                $value = $param['value'];
+            }
+
             foreach ($param['filters'] as $filter) {
-                $value = $this->applyFilter($filter['key'], $value, $this->resolveFilterArgs($filter['args'], $paramsValues));
+                $value = $this->applyFilter($filter['key'], $value, $this->resolveArgs($filter['args'], $paramsValues));
             }
 
             $stub = str_replace($param['code'], $value, $stub);
@@ -162,12 +107,11 @@ class Stuble
         }, $params));
 
         foreach ($params as $i => $param) {
-            $params[$i]['is_arg'] = false;
             foreach ($param['filters'] as $filter) {
                 foreach ($filter['args'] as $arg) {
                     if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
                         $params[] = [
-                            'is_arg' => true,
+                            'type' => 'arg',
                             'key' => $arg['value'],
                             'value' => '',
                             'code' => null,
@@ -181,7 +125,7 @@ class Stuble
         return $params;
     }
 
-    protected function resolveFilterArgs(array $args, array $paramsValues)
+    protected function resolveArgs(array $args, array $paramsValues)
     {
         $results = [];
         foreach ($args as $arg) {

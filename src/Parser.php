@@ -4,6 +4,8 @@ namespace Emsifa\Stuble;
 
 class Parser
 {
+    const TYPE_PARAM            = 100;
+    const TYPE_HELPER           = 101;
 
     const CONTENT               = 0;
     const OPEN_TAG              = 1;
@@ -29,27 +31,37 @@ class Parser
         foreach ($codes as $code) {
             $parsed = [
                 'key' => '',
+                'type' => '',
                 'value' => '',
                 'filters' => [],
-                'code' => $code['code']
+                'code' => $code['code'],
+                'args' => []
             ];
 
             foreach ($code['tokens'] as $data) {
                 switch ($data[0]) {
                     case static::PARAM_KEY:
-                        $parsed['key'] = $data[1];
+                        $parsed['type'] = $data[1];
+                        $parsed['key'] = $data[2];
                         break;
+
                     case static::DEFAULT_VALUE:
                         $parsed['value'] = $data[1];
                         break;
+
                     case static::FILTER_KEY:
                         $parsed['filters'][] = [
                             'key' => $data[1],
                             'args' => []
                         ];
                         break;
+
                     case static::PARAM_VALUE:
-                        $parsed['filters'][count($parsed['filters']) - 1]['args'][] = ['type' => $data[1], 'value' => $data[2]];
+                        if (!count($parsed['filters'])) {
+                            $parsed['args'][] = ['type' => $data[1], 'value' => $data[2]];
+                        } else {
+                            $parsed['filters'][count($parsed['filters']) - 1]['args'][] = ['type' => $data[1], 'value' => $data[2]];
+                        }
                         break;
                 }
             }
@@ -125,14 +137,18 @@ class Parser
                     if (static::strIs($tok.$char, $regexParam)) {
                         $tok .= $char;
                     } elseif ($char == "[") {
-                        $tags[$n]['tokens'][] = [static::PARAM_KEY, $tok];
+                        $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_PARAM, $tok];
                         $states[] = static::OPEN_DEFAULT_VALUE;
                         $tok = "[";
+                    } elseif ($char == "(") {
+                        $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_HELPER, $tok];
+                        $states[] = static::OPEN_FILTER_PARAMS;
+                        $tok = "";
                     } elseif(static::isWhitespace($char)) {
-                        $tags[$n]['tokens'][] = [static::PARAM_KEY, $tok];
+                        $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_PARAM, $tok];
                         $states[] = static::CLOSING_TAG;
                     } elseif ($char == ".") {
-                        $tags[$n]['tokens'][] = [static::PARAM_KEY, $tok];
+                        $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_PARAM, $tok];
                         $states[] = static::FILTER_KEY;
                         $tok = "";
                     } else {

@@ -1,0 +1,64 @@
+<?php
+
+namespace Emsifa\Stuble\Concerns;
+
+trait HelperUtils
+{
+
+    protected static $hasInitializeGlobalHelpers = false;
+    protected static $globalHelpers = [];
+    protected $helpers = [];
+
+    public static function initializeGlobalHelpers()
+    {
+        if (static::$hasInitializeGlobalHelpers) {
+            return;
+        }
+
+        $baseHelpers = [
+            'date'   => 'date'
+        ];
+
+        foreach ($baseHelpers as $key => $helper) {
+            if (!static::hasGlobalHelper($key)) {
+                static::globalHelper($key, $helper);
+            }
+        }
+
+        static::$hasInitializeGlobalHelpers = true;
+    }
+
+    public static function globalHelper(string $key, callable $helper)
+    {
+        static::$globalHelpers[$key] = $helper;
+    }
+
+    public static function hasGlobalHelper(string $key)
+    {
+        return isset(static::$globalHelpers[$key]);
+    }
+
+    public function helper(string $key, callable $helper)
+    {
+        if ($helper instanceof Closure) {
+            $helper = $helper->bindTo($this);
+        }
+
+        $this->helpers[$key] = $helper;
+    }
+
+    public function hasHelper(string $key)
+    {
+        return isset($this->helpers[$key]);
+    }
+
+    public function applyHelper(string $key, array $args)
+    {
+        if (!isset($this->helpers[$key])) {
+            throw new \RuntimeException("Helper '{$key}' is not defined.");
+        }
+
+        return call_user_func_array($this->helpers[$key], $args);
+    }
+
+}

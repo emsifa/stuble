@@ -103,7 +103,7 @@ class CreateCommand extends StubleCommand
     {
         $params = [];
         foreach ($stubles as $stuble) {
-            $stubleParams = $stuble->getParamsValues();
+            $stubleParams = $stuble->getParamsValues(false);
             foreach ($stubleParams as $key => $value) {
                 if (!isset($params[$key])) {
                     $params[$key] = $value;
