@@ -41,17 +41,17 @@ Then create file `stubs/model.stub` in that directory:
 ```php
 <?php
 
-namespace {?model_namespace[App\Models]?};
+namespace {? model_namespace["App\Models"] ?};
 
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Model {?entity?}
+ * Model {? entity ?}
  */
-class {?entity::pascal?} extends Model
+class {? entity.pascal ?} extends Model
 {
 
-    protected $table = "{?entity::snake.plural?}";
+    protected $table = "{? entity.snake.plural ?}";
 
 }
 
@@ -72,10 +72,9 @@ then ask again where to put result file.
 Try example above, look at the result. You would realize things like:
 
 * First word wrapped by `{?...?}` is a parameter that stuble would ask.
-* Words wrapped by `[...]` like `App\Models` is parameter default value.
+* Words wrapped by `["..."]` like `App\Models` is parameter default value.
 * `pascal`, `snake`, `plural` are filters that modify your parameter value.
-* Parameter and filters separated by `::`.
-* For multiple filters. You can use `.` to separate them like `snake.plural`.
+* You can use `.` to separate each filters (like `snake.plural`).
 
 ## THINGS YOU NEED TO KNOW
 

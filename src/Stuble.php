@@ -2,6 +2,8 @@
 
 namespace Emsifa\Stuble;
 
+use Closure;
+
 class Stuble
 {
 
@@ -19,19 +21,20 @@ class Stuble
         }
 
         $baseFilters = [
-            'lower' => 'strtolower',
-            'upper' => 'strtoupper',
-            'ucfirst' => 'ucfirst',
-            'ucwords' => 'ucwords',
-            'kebab' => [Filters::class, 'kebab'],
-            'snake' => [Filters::class, 'snake'],
-            'camel' => [Filters::class, 'camel'],
-            'pascal' => [Filters::class, 'pascal'],
-            'studly' => [Filters::class, 'studly'],
-            'title' => [Filters::class, 'title'],
-            'words' => [Filters::class, 'words'],
-            'plural' => [Filters::class, 'plural'],
-            'singular' => [Filters::class, 'singular'],
+            'lower'     => 'strtolower',
+            'upper'     => 'strtoupper',
+            'ucfirst'   => 'ucfirst',
+            'ucwords'   => 'ucwords',
+            'kebab'     => [Filters::class, 'kebab'],
+            'snake'     => [Filters::class, 'snake'],
+            'camel'     => [Filters::class, 'camel'],
+            'pascal'    => [Filters::class, 'pascal'],
+            'studly'    => [Filters::class, 'studly'],
+            'title'     => [Filters::class, 'title'],
+            'words'     => [Filters::class, 'words'],
+            'plural'    => [Filters::class, 'plural'],
+            'singular'  => [Filters::class, 'singular'],
+            'replace'   => [Filters::class, 'replace'],
         ];
 
         foreach ($baseFilters as $key => $filter) {
@@ -59,11 +62,16 @@ class Stuble
 
         $this->stub = $stub;
         $this->params = $this->parseParams($stub);
+
         $this->filters = static::$globalFilters;
     }
 
     public function filter(string $key, callable $filter)
     {
+        if ($filter instanceof Closure) {
+            $filter = $filter->bindTo($this);
+        }
+
         $this->filters[$key] = $filter;
     }
 
@@ -72,13 +80,13 @@ class Stuble
         return isset($this->filters[$key]);
     }
 
-    public function applyFilter(string $key, string $value)
+    public function applyFilter(string $key, string $value, array $args)
     {
         if (!isset($this->filters[$key])) {
             throw new \RuntimeException("Filter '{$key}' is not defined.");
         }
 
-        return call_user_func($this->filters[$key], $value);
+        return call_user_func_array($this->filters[$key], array_merge([$value], $args));
     }
 
     public function getParams() : array
@@ -110,18 +118,23 @@ class Stuble
 
     public function render(array $values = []) : Result
     {
-        $params = $this->fillValues($this->params, $values);
+        $this->setParamsValues($values);
+
+        $params = $this->getParams();
+        $paramsValues = $this->getParamsValues();
+
         usort($params, function ($a, $b) {
-            return strlen($a['match']) < strlen($b['match']);
+            return strlen($a['code']) < strlen($b['code']);
         });
 
         $stub = $this->stub;
         foreach ($params as $param) {
             $value = $param['value'];
             foreach ($param['filters'] as $filter) {
-                $value = static::applyFilter($filter, $value);
+                $value = $this->applyFilter($filter['key'], $value, $this->resolveFilterArgs($filter['args'], $paramsValues));
             }
-            $stub = str_replace($param['match'], $value, $stub);
+
+            $stub = str_replace($param['code'], $value, $stub);
         }
 
         return new Result($stub);
@@ -134,34 +147,28 @@ class Stuble
                 $params[$i]['value'] = $values[$param['key']];
             }
         }
+
         return $params;
     }
 
     protected function parseParams(string $stub) : array
     {
-        $regex = "\{\?(?<key>\w+)(\[(?<val>[^\]]+)\])?(::(?<filters>\w+(\.\w+)*))?\?\}";
-        preg_match_all("/{$regex}/", $stub, $matchs);
-        $params = [];
-
-        foreach ($matchs['key'] as $i => $key) {
-            $params[] = [
-                'key' => $key,
-                'match' => $matchs[0][$i],
-                'filters' => $this->parseFilters($matchs['filters'][$i]),
-                'value' => $matchs['val'][$i]
-            ];
-        }
-
-        return $params;
+        return Parser::parse($stub);
     }
 
-    protected function parseFilters(string $str)
+    protected function resolveFilterArgs(array $args, array $paramsValues)
     {
-        if (!$str) {
-            return [];
+        $results = [];
+        foreach ($args as $arg) {
+            if ($arg['type'] == Parser::PARAM_STR) {
+                $results[] = (string) $arg['value'];
+            } elseif ($arg['type'] == Parser::PARAM_NUM) {
+                $results[] = is_numeric(strpos($arg['value'], '.')) ? (float) $arg['value'] : (int) $arg['value'];
+            } elseif ($arg['type'] == Parser::PARAM_VAR) {
+                $results[] = isset($paramsValues[$arg['value']]) ? $paramsValues[$arg['value']] : null;
+            }
         }
-
-        return explode('.', $str);
+        return $results;
     }
 
 }

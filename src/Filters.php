@@ -7,6 +7,11 @@ use Doctrine\Common\Inflector\Inflector;
 class Filters
 {
 
+    public static function replace(string $str, $from, $to) : string
+    {
+        return str_replace($from, $to, $str);
+    }
+
     public static function singular (string $str) : string
     {
         return Inflector::singularize($str);
