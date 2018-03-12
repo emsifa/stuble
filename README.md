@@ -110,7 +110,7 @@ Write code below:
 <?php
 
 $stub->filter('substr', function (string $value, int $start, int $length = null) {
-    return substr($value, $start, $length;)
+    return substr($value, $start, $length);
 });
 
 ```
