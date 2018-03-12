@@ -186,12 +186,12 @@ For example:
 # Show list stubs in global and local sources
 stuble ls
 
-# Show list stubs in global sources only
+# Show list stubs in global source only
 stuble ls --global
 # or
 stuble ls -G
 
-# Show list stubs in local sources only
+# Show list stubs in local source only
 stuble ls --here
 # or
 stuble ls -H
@@ -199,7 +199,7 @@ stuble ls -H
 # Show list stubs contains 'laravel'
 stuble ls laravel
 
-# Show list stubs contains 'laravel' in global sources
+# Show list stubs contains 'laravel' in global source only
 stuble ls laravel -G
 
 ```
