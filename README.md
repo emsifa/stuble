@@ -101,8 +101,12 @@ You can use `stuble create laravel-scaffolds` to generate `controller`, `factory
 
 #### Define Output Path in Stub File
 
-If you have your own standard filepath and don't want stuble ask file path every generate that stub,
-you can use `## path: <your-path-here>` at very top of your stub file.
+If you have your own standard filepath and don't want stuble ask for output filepath every `stuble create` that stub,
+you can add line below at very top of your stub file:
+
+```
+## path: define/your/path/here.ext
+```
 
 Example:
 
