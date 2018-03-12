@@ -26,7 +26,7 @@ composer global require emsifa/stuble:dev-master
 Before we get started, you need to know that stuble scan stubs files from 2 locations.
 
 1. Local source: `stubs` directory wherever you want to use `stuble` command.
-2. Global source: path that defined in STUBS_PATH variable.
+2. Global source: path that defined in `STUBS_PATH` variable.
 
 If same stub file found in 2 sources, stuble will use local stub file.
 
@@ -77,6 +77,16 @@ Try example above, look at the result. You would realize things like:
 * You can use `.` to separate each filters (like `snake.plural`).
 
 ## THINGS YOU NEED TO KNOW
+
+#### Add Global Source
+
+If you want to use global source, you should define `STUBS_PATH` in your environment variable.
+
+For linux `.bashrc` or `.zshrc` file.
+
+```
+export STUBS_PATH=/home/{your_username}/stubs
+```
 
 #### Generate Stubs in a Directory
 
