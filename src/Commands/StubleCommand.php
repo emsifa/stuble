@@ -33,9 +33,12 @@ abstract class StubleCommand extends Command
     {
         $dirPath = "{$dir}/{$stub}";
         $filePath = "{$dir}/{$stub}.stub";
+        $wildcardPath = "{$dir}/{$stub}.stub";
         $files = [];
 
-        if (is_dir($dirPath)) {
+        if (is_numeric(strpos($stub, '*'))) {
+            return glob($wildcardPath);
+        } elseif (is_dir($dirPath)) {
             $files = glob($dirPath.'/*.stub');
         } elseif(is_file($filePath)) {
             $files = [$filePath];
