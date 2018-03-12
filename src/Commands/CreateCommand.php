@@ -22,6 +22,20 @@ class CreateCommand extends StubleCommand
             exit;
         }
 
+        if (count($stubsFiles) > 1) {
+            $this->writeln("# FOUND STUBS FILES", "cyan");
+            foreach ($stubsFiles as $file) {
+                $info = $this->getStubFileInfo($file);
+                $this->writeln("- {$info['source']}/{$info['relative_path']}", "green");
+            }
+            $this->writeln("");
+        } else {
+            $this->writeln("# FOUND STUB FILE", "cyan");
+            $info = $this->getStubFileInfo($stubsFiles[0]);
+            $this->writeln("{$info['source']}/{$info['relative_path']}", "green");
+            $this->writeln("");
+        }
+
         $stubles = array_map(function ($file) {
             return $this->makeStuble($file);
         }, $stubsFiles);
@@ -133,6 +147,33 @@ class CreateCommand extends StubleCommand
             if (!is_dir($path)) {
                 mkdir($path);
             }
+        }
+    }
+
+    protected function getStubFileInfo(string $absFilePath)
+    {
+        $envPath = $this->getEnvPath().'/';
+        $workingPath = $this->getWorkingPath().'/stubs/';
+
+        if (strpos($absFilePath, $envPath) === 0) {
+            return [
+                'source' => '[STUBS_PATH]',
+                'relative_path' => substr($absFilePath, strlen($envPath)),
+                'absolute_path' => $absFilePath
+            ];
+        } elseif (strpos($absFilePath, $workingPath) === 0) {
+            return [
+                'source' => 'stubs',
+                'relative_path' => substr($absFilePath, strlen($workingPath)),
+                'absolute_path' => $absFilePath
+            ];
+        } else {
+            // IDK why I add this. Just to make sure maybe.
+            return [
+                'source' => 'unknown',
+                'relative_path' => $absFilePath,
+                'absolute_path' => $absFilePath
+            ];
         }
     }
 
