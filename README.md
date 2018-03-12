@@ -82,7 +82,7 @@ Try example above, look at the result. You would realize things like:
 
 If you want to use global source, you should define `STUBS_PATH` in your environment variable.
 
-For linux `.bashrc` or `.zshrc` file.
+For linux, you can add line below to your `.bashrc` or `.zshrc` file.
 
 ```
 export STUBS_PATH=/home/{your_username}/stubs
