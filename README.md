@@ -78,7 +78,7 @@ Try example above, look at the result. You would realize things like:
 
 ## THINGS YOU NEED TO KNOW
 
-#### Add Global Source
+#### Using Global Source
 
 If you want to use global source, you should define `STUBS_PATH` in your environment variable.
 
