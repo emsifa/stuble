@@ -105,7 +105,7 @@ If you have your own standard filepath and don't want stuble ask for output file
 you can add line below at very top of your stub file:
 
 ```
-## path: define/your/path/here.ext
+## path: define/your/relative/path/here.ext
 ```
 
 Example:
