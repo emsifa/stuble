@@ -183,7 +183,7 @@ You can use command `stuble ls` to show list available stubs.
 For example:
 
 ```bash
-# Show list stubs in global and local sources
+# Show list stubs in both global and local sources
 stuble ls
 
 # Show list stubs in global source only
