@@ -213,3 +213,13 @@ stuble ls laravel
 stuble ls laravel -G
 
 ```
+
+#### Dump Result
+
+If you want to dump result instead of save it, you can use `--dump` in `stuble create` command.
+
+For example:
+
+```
+stuble create laravel-scaffolds --dump
+```
