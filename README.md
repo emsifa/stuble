@@ -78,4 +78,52 @@ Try example above, look at the result. You would realize things like:
 
 ## THINGS YOU NEED TO KNOW
 
-(soon)
+#### Built-in Filters
+
+| Filter   | Description                              | Value                           | Result             |
+|----------|------------------------------------------|---------------------------------|--------------------|
+| lower    | Transform value to lower case.           | ProductCategory                 | productcategory    |
+| upper    | Transform value to upper case.           | ProductCategory                 | PRODUCTCATEGORY    |
+| ucfirst  | Make first letter capital.               | product category                | Product category   |
+| ucwords  | Make first letter in each words capital. | product category                | Product Category   |
+| kebab    | Transform value to kebab-case/dash-case. | ProductCategory                 | product-category   |
+| snake    | Transform value to snake_case.           | ProductCategory                 | product_category   |
+| camel    | Transform value to camelCase.            | product category                | productCategory    |
+| pascal   | Transform value to PascalCase.           | product category                | ProductCategory    |
+| studly   | Alias pascal.                            | product category                | ProductCategory    |
+| title    | Transform value to Title Case.           | product_category                | Product Category   |
+| words    | Transform value to words.                | product_category                | product category   |
+| plural   | Transform value to plural form.          | product_category                | product_categories |
+| singular | Transform value to singular form.        | ProductCategories               | ProductCategory    |
+| replace  | Replace string in value.                 | "Foo\Bar\Baz".replace("\", "/") | Foo/Bar/Baz        |
+
+
+#### Make Your Own Filter
+
+In this example we will add filter `substr`.
+
+In your `stubs` directory, create file `stuble-init.php`.
+Write code below:
+
+```php
+
+<?php
+
+$stub->filter('substr', function (string $value, int $start, int $length = null) {
+    return substr($value, $start, $length;)
+});
+
+```
+
+Then you can use it like this.
+
+```
+// sample.stub
+
+Your param: {? your_param ?}
+Your param after substr: {? your_param.substr(0, 6) ?}
+
+```
+
+> You can use that filter in all stubs file inside that directory, including subdirectories too. If you have same filter in subdirectory, stuble will override it.
+
