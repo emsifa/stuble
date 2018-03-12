@@ -125,6 +125,9 @@ class {? entity.pascal ?} extends Model
 
 ```
 
+Now if you create file from that stub, stuble won't ask you output filepath.
+Instead stuble will automatically put file using that format.
+
 #### Built-in Filters
 
 | **Filter**            | Description                              | Value                            | Result             |
