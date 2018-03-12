@@ -78,6 +78,49 @@ Try example above, look at the result. You would realize things like:
 
 ## THINGS YOU NEED TO KNOW
 
+#### Generate Stubs in a Directory
+
+Just put `path/to/directory` instead `path/to/filename` in `stuble create` command.
+Stuble will collect parameters in stubs files inside that directory.
+Then generate results files.
+
+For example if your `stubs` directory has structure like this:
+
+```
+└── laravel-scaffolds
+    ├── controller.stub
+    ├── factory.stub
+    ├── migration.stub
+    ├── model.stub
+    ├── resource.stub
+    ├── store-request.stub
+    └── update-request.stub
+```
+
+You can use `stuble create laravel-scaffolds` to generate `controller`, `factory`, `migration`, `model`, `resource`, `store-request`, and `update-request`.
+
+#### Define Output Path in Stub File
+
+If you have your own standard filepath and don't want stuble ask file path every generate that stub,
+you can use `## path: <your-path-here>` at very top of your stub file.
+
+Example:
+
+```php
+## path: app/Models/{? entity.pascal ?}.php
+<?php
+
+namespace App\Models;
+
+class {? entity.pascal ?} extends Model
+{
+
+    protected $table = "{? entity.snake.plural ?}";
+
+}
+
+```
+
 #### Built-in Filters
 
 | **Filter**            | Description                              | Value                            | Result             |
