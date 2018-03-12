@@ -99,7 +99,7 @@ For example if your `stubs` directory has structure like this:
 
 You can use `stuble create laravel-scaffolds` to generate `controller`, `factory`, `migration`, `model`, `resource`, `store-request`, and `update-request`.
 
-#### Define Output Path in Stub File
+#### Define Output File Path in Stub File
 
 If you have your own standard filepath and don't want stuble ask for output filepath every `stuble create` that stub,
 you can add line below at very top of your stub file:
