@@ -24,9 +24,9 @@ class CreateCommand extends StubleCommand
 
         if (count($stubsFiles) > 1) {
             $this->writeln("# FOUND STUBS FILES", "cyan");
-            foreach ($stubsFiles as $file) {
+            foreach ($stubsFiles as $i => $file) {
                 $info = $this->getStubFileInfo($file);
-                $this->writeln("- {$info['source']}/{$info['relative_path']}", "green");
+                $this->writeln(($i+1).") {$info['source']}/{$info['relative_path']}", "green");
             }
             $this->writeln("");
         } else {
