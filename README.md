@@ -158,7 +158,7 @@ Write code below:
 ```php
 <?php
 
-$stub->filter('substr', function (string $value, int $start, int $length = null) {
+$stuble->filter('substr', function (string $value, int $start, int $length = null) {
     return substr($value, $start, $length);
 });
 
