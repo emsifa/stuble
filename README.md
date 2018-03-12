@@ -176,3 +176,30 @@ Your param after substr: {? your_param.substr(0, 6) ?}
 
 > You can use that filter in all stubs file inside that directory, including subdirectories too. If you have same filter in subdirectory, stuble will override it.
 
+#### Show List Available Stubs
+
+You can use command `stuble ls` to show list available stubs.
+
+For example:
+
+```bash
+# Show list stubs in global and local sources
+stuble ls
+
+# Show list stubs in global sources only
+stuble ls --global
+# or
+stuble ls -G
+
+# Show list stubs in local sources only
+stuble ls --here
+# or
+stuble ls -H
+
+# Show list stubs contains 'laravel'
+stuble ls laravel
+
+# Show list stubs contains 'laravel' in global sources
+stuble ls laravel -G
+
+```
