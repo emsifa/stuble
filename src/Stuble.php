@@ -13,16 +13,26 @@ class Stuble
     protected $stub;
     protected $params;
 
-    public function __construct(string $stub)
+    public function __construct(string $filepath)
     {
+        if (!file_exists($filepath)) {
+            throw new \Exception("Stub file '{$filepath}' not found.");
+        }
+
         static::initializeGlobalFilters();
         static::initializeGlobalHelpers();
 
-        $this->stub = $stub;
-        $this->params = $this->parseParams($stub);
+        $this->filepath = realpath($filepath);
+        $this->stub = file_get_contents($this->filepath);
+        $this->params = $this->parseParams($this->stub);
 
         $this->filters = static::$globalFilters;
         $this->helpers = static::$globalHelpers;
+    }
+
+    public function getFilepath()
+    {
+        return $this->filepath;
     }
 
     public function getParams() : array
@@ -107,6 +117,20 @@ class Stuble
         }, $params));
 
         foreach ($params as $i => $param) {
+            if (isset($param['args'])) {
+                foreach ($param['args'] as $arg) {
+                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
+                        $params[] = [
+                            'type' => 'arg',
+                            'key' => $arg['value'],
+                            'value' => '',
+                            'code' => null,
+                            'filters' => []
+                        ];
+                    }
+                }
+            }
+
             foreach ($param['filters'] as $filter) {
                 foreach ($filter['args'] as $arg) {
                     if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {

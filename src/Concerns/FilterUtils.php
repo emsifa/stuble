@@ -3,6 +3,7 @@
 namespace Emsifa\Stuble\Concerns;
 
 use Emsifa\Stuble\Filters;
+use Closure;
 
 trait FilterUtils
 {
@@ -55,10 +56,6 @@ trait FilterUtils
 
     public function filter(string $key, callable $filter)
     {
-        if ($filter instanceof Closure) {
-            $filter = $filter->bindTo($this);
-        }
-
         $this->filters[$key] = $filter;
     }
 
@@ -73,7 +70,12 @@ trait FilterUtils
             throw new \RuntimeException("Filter '{$key}' is not defined.");
         }
 
-        return call_user_func_array($this->filters[$key], array_merge([$value], $args));
+        $filter = $this->filters[$key];
+        if ($filter instanceof Closure) {
+            $filter = $filter->bindTo($this);
+        }
+
+        return call_user_func_array($filter, array_merge([$value], $args));
     }
 
 }

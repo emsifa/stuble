@@ -94,8 +94,7 @@ class CreateCommand extends StubleCommand
 
     protected function makeStuble(string $file)
     {
-        $content = file_get_contents($file);
-        $stuble = new Stuble($content);
+        $stuble = new Stuble($file);
         $stuble->filename = pathinfo($file, PATHINFO_FILENAME);
         $this->includesStubleInits($stuble, $file);
 
