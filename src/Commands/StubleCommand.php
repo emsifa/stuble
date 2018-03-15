@@ -59,25 +59,31 @@ abstract class StubleCommand extends Command
 
     protected function includesStubleInits(Stuble $stuble, string $file)
     {
-        if (strpos($file, $this->getWorkingPath()) === 0) {
-            $this->includeStubleInitsFromDirectory($stuble, $file, $this->getWorkingPath().'/stubs');
-        } elseif (strpos($file, $this->getEnvPath()) === 0) {
-            $this->includeStubleInitsFromDirectory($stuble, $file, $this->getEnvPath());
+        $initFiles = $this->getStubleInitFiles($file);
+        foreach ($initFiles as $initFile) {
+            $this->includeStubleInitFile($initFile, $stuble);
         }
     }
 
-    protected function includeStubleInitsFromDirectory(Stuble $stuble, string $file, string $dir)
+    protected function getStubleInitFiles(string $file)
     {
-        $paths = explode("/", str_replace($dir.'/', "", dirname($file)));
-        $path = "";
-
-        while (!empty($paths)) {
-            $initFile = $path ? "{$dir}{$path}/stuble-init.php" : "{$dir}/stuble-init.php";
-            if (file_exists($initFile)) {
-                $this->includeStubleInitFile($initFile, $stuble);
-            }
-            $path .= "/" . array_shift($paths);
+        if (strpos($file, $this->getWorkingPath()) === 0) {
+            $dir = $this->getWorkingPath().'/stubs';
+        } elseif (strpos($file, $this->getEnvPath()) === 0) {
+            $dir = $this->getEnvPath();
+        } else {
+            throw new \UnexpectedValueException("Failed to get stuble init files from '{$file}'. Argument 1 must be a path from global path or current path.");
         }
+
+        $files = [];
+        $paths = explode("/", str_replace($dir.'/', "", dirname($file)));
+
+        do {
+            $path = $dir . '/' . implode("/", $paths);
+            $files = array_merge($files, glob($path.'/stuble-init.php'));
+        } while (array_pop($paths));
+
+        return array_reverse($files);
     }
 
     protected function includeStubleInitFile(string $initFile, Stuble $stuble)
