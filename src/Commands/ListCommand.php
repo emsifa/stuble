@@ -11,7 +11,7 @@ class ListCommand extends StubleCommand
         ls
         {keyword?}
         {--G|global::Get stubs files from STUBS_PATH only.}
-        {--H|here::Get stubs files from current path only.}
+        {--L|local::Get stubs files from current path only.}
         {--f|flatten::Flatten results (not grouped by directory).}
     ";
 
@@ -26,14 +26,14 @@ class ListCommand extends StubleCommand
         }
 
         $global = $this->option('global');
-        $here = $this->option('here');
-        $all = (!$global && !$here) || ($global && $here);
+        $local = $this->option('local');
+        $all = (!$global && !$local) || ($global && $local);
 
         if (empty($files)) {
             $suffix = $keyword ? " with keyword '{$keyword}'" : "";
             if ($all) {
                 $this->error("No stubs files found{$suffix}.");
-            } elseif ($here) {
+            } elseif ($local) {
                 $this->error("No stubs files found in this directory{$suffix}.");
             } elseif ($global) {
                 $this->error("No stubs files found in your STUBS_PATH{$suffix}.");
@@ -93,8 +93,8 @@ class ListCommand extends StubleCommand
         $globalFiles = [];
         $localFiles = [];
         $global = $this->option('global');
-        $here = $this->option('here');
-        $all = (!$global && !$here) || ($global && $here);
+        $local = $this->option('local');
+        $all = (!$global && !$local) || ($global && $local);
 
         $envPath = $this->getEnvPath();
         $workingPath = $this->getWorkingPath();
@@ -107,7 +107,7 @@ class ListCommand extends StubleCommand
             $globalFiles = $this->getStubsFilesFromDirectory($envPath);
         }
 
-        if ($here || $all) {
+        if ($local || $all) {
             $localFiles = $this->getStubsFilesFromDirectory($workingPath.'/stubs');
         }
 

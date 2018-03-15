@@ -202,9 +202,9 @@ stuble ls --global
 stuble ls -G
 
 # Show list stubs in local source only
-stuble ls --here
+stuble ls --local
 # or
-stuble ls -H
+stuble ls -L
 
 # Show list stubs contains 'laravel'
 stuble ls laravel
