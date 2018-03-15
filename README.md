@@ -9,7 +9,7 @@ So you don't need to write scripts to handle each stub file.
 
 ## REQUIREMENTS
 
-* PHP >= 7.0
+* PHP >= 7.1
 * Composer
 
 ## INSTALLATION
