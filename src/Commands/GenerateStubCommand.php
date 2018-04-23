@@ -2,51 +2,70 @@
 
 namespace Emsifa\Stuble\Commands;
 
-use Emsifa\Stuble\Result;
 use Emsifa\Stuble\Stuble;
-use Rakit\Console\Command;
+use Emsifa\Stuble\Result;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class CreateCommand extends StubleCommand
+class GenerateStubCommand extends StubleCommand
 {
 
-    protected $signature = "create {stub} {--d|dump::Dump render results.}";
+    protected $name = 'gen:stub';
+    protected $description = 'Generate file by given stub file/directory.';
+    protected $help = '';
 
-    protected $description = "Create file from given stub.";
+    protected $args = [
+        'stub' => [
+            'type' => InputArgument::REQUIRED,
+            'description' => 'Stub file/directory.'
+        ]
+    ];
 
-    public function handle($stub)
+    protected $options = [
+        'dump' => [
+            'alias' => 'd',
+            'description' => 'Dump render results.'
+        ]
+    ];
+
+    protected function handle()
     {
+        $stub = $this->argument('stub');
+
         $stubsFiles = $this->findStubsFiles($stub);
 
         if (empty($stubsFiles)) {
             $this->error("Stub file '{$stub}.stub' not found.");
-            exit;
         }
 
         if (count($stubsFiles) > 1) {
-            $this->writeln("# FOUND STUBS FILES", "cyan");
+            $this->text("# FOUND STUBS FILES");
             foreach ($stubsFiles as $i => $file) {
                 $info = $this->getStubFileInfo($file);
-                $this->writeln(($i+1).") {$info['source']}/{$info['relative_path']}", "green");
+                $this->text(($i + 1) . ") {$info['source']}/{$info['relative_path']}");
             }
-            $this->writeln("");
+            $this->nl();
         } else {
-            $this->writeln("# FOUND STUB FILE", "cyan");
+            $this->info("# FOUND STUB FILE");
             $info = $this->getStubFileInfo($stubsFiles[0]);
-            $this->writeln("{$info['source']}/{$info['relative_path']}", "green");
-            $this->writeln("");
+            $this->text("{$info['source']}/{$info['relative_path']}");
+            $this->nl();
         }
 
         $stubles = array_map(function ($file) {
             return $this->makeStuble($file);
         }, $stubsFiles);
 
-        $this->writeln("# FILL PARAMETERS", "cyan");
+        $this->info("# FILL PARAMETERS");
         $paramsValues = $this->askParams($stubles);
 
         $dump = $this->option('dump');
 
         if (!$dump) {
-            $this->writeln("# SAVING FILES", "cyan");
+            $this->nl();
+            $this->info("# SAVING FILES");
             foreach ($stubles as $stuble) {
                 $result = $stuble->render($paramsValues);
                 $this->askToSave($result, $stuble);
@@ -62,7 +81,7 @@ class CreateCommand extends StubleCommand
     protected function askToSave(Result $result, Stuble $stuble)
     {
         $filename = $stuble->filename;
-        $content = (string) $result;
+        $content = (string)$result;
         $savePath = $result->getSavePath();
         if (!$savePath) {
             $savePath = $this->ask("Set {$filename} save path:");
@@ -74,7 +93,7 @@ class CreateCommand extends StubleCommand
         }
 
         $this->save($dest, $content);
-        $this->writeln("+ File '{$savePath}' saved!", "green");
+        $this->text("+ File '{$savePath}' saved!");
     }
 
     protected function dumpResult(Result $result, Stuble $stuble)
@@ -82,14 +101,16 @@ class CreateCommand extends StubleCommand
         $params = $result->getParams();
         $stub = $stuble->filename;
 
-        $len = max(array_map(function ($k) { return strlen($k); }, array_keys($params)));
+        $len = max(array_map(function ($k) {
+            return strlen($k);
+        }, array_keys($params)));
 
-        $this->writeln('');
-        $this->writeln("[{$stub}]".PHP_EOL, "green");
+        $this->nl();
+        $this->info("[{$stub}]" . PHP_EOL);
         foreach ($params as $key => $value) {
-            $this->writeln(str_pad($key, $len, " ", STR_PAD_RIGHT)." : {$value}", "blue");
+            $this->text(str_pad($key, $len, " ", STR_PAD_RIGHT) . " : {$value}");
         }
-        $this->writeln($result);
+        $this->text($result);
     }
 
     protected function makeStuble(string $file)
@@ -151,8 +172,8 @@ class CreateCommand extends StubleCommand
 
     protected function getStubFileInfo(string $absFilePath)
     {
-        $envPath = $this->getEnvPath().'/';
-        $workingPath = $this->getWorkingPath().'/stubs/';
+        $envPath = $this->getEnvPath() . '/';
+        $workingPath = $this->getWorkingPath() . '/stubs/';
 
         if (strpos($absFilePath, $envPath) === 0) {
             return [
@@ -175,5 +196,4 @@ class CreateCommand extends StubleCommand
             ];
         }
     }
-
 }

@@ -3,7 +3,6 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Stuble;
-use Rakit\Console\Command;
 
 abstract class StubleCommand extends Command
 {

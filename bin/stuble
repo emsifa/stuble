@@ -1,10 +1,10 @@
 #!/usr/bin/env php
 <?php
 
-use Emsifa\Stuble\Commands\CreateCommand;
+use Emsifa\Stuble\Commands\GenerateStubCommand;
 use Emsifa\Stuble\Commands\ListCommand;
 use Emsifa\Stuble\Stuble;
-use Rakit\Console\App;
+use Symfony\Component\Console\Application;
 
 foreach ([__DIR__.'/../../../autoload.php', __DIR__.'/../vendor/autoload.php'] as $autoloadFile) {
     if (file_exists($autoloadFile)) {
@@ -19,9 +19,9 @@ if (!class_exists(Stuble::class)) {
     exit;
 }
 
-$app = new App($argv);
+$app = new Application('stuble', 'v0.1.0');
 
-$app->register(new ListCommand);
-$app->register(new CreateCommand);
+$app->add(new GenerateStubCommand());
+$app->add(new ListCommand());
 
 $app->run();

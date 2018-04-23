@@ -9,7 +9,6 @@
         }
     ],
     "require": {
-        "rakit/console": "^0.1.2",
         "doctrine/inflector": "^1.3"
     },
     "autoload": {
@@ -17,5 +16,8 @@
             "Emsifa\\Stuble\\": "src/"
         }
     },
-    "bin": ["bin/stuble"]
+    "bin": ["bin/stuble"],
+    "require-dev": {
+        "symfony/console": "^4.0"
+    }
 }

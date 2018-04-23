@@ -2,23 +2,43 @@
 
 namespace Emsifa\Stuble\Commands;
 
-use Rakit\Console\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ListCommand extends StubleCommand
 {
 
-    protected $signature = "
-        ls
-        {keyword?}
-        {--G|global::Get stubs files from STUBS_PATH only.}
-        {--L|local::Get stubs files from current path only.}
-        {--f|flatten::Flatten results (not grouped by directory).}
-    ";
+    protected $name = 'ls';
+    protected $description = 'Show list available stubs.';
+    protected $help = '';
 
-    protected $description = "Show list available stubs.";
+    protected $args = [
+        'keyword' => [
+            'type' => InputArgument::OPTIONAL,
+            'description' => 'Search keyword.'
+        ]
+    ];
 
-    public function handle($keyword = null)
+    protected $options = [
+        'global' => [
+            'alias' => 'G',
+            'description' => 'Show global stubs only.'
+        ],
+        'local' => [
+            'alias' => 'L',
+            'description' => 'Show local stubs (from current directory) only.'
+        ],
+        'flatten' => [
+            'alias' => 'f',
+            'description' => 'Flatten results (not grouped by directory).'
+        ]
+    ];
+
+    protected function handle()
     {
+        $keyword = $this->argument('keyword');
+
         $files = $this->getFiles();
 
         if ($keyword) {
@@ -59,7 +79,7 @@ class ListCommand extends StubleCommand
         $flatten = $this->option('flatten');
         $count = count($files);
         $n = 0;
-        $d = strlen((string) $count);
+        $d = strlen((string)$count);
 
         if ($ungroupeds) {
             print(PHP_EOL);
@@ -72,7 +92,7 @@ class ListCommand extends StubleCommand
         foreach ($groupeds as $dir => $files) {
             if (!$flatten) {
                 print(PHP_EOL);
-                $this->writeln(str_repeat(' ', $d)."  {$dir}", "green");
+                $this->success(str_repeat(' ', $d) . "  {$dir}");
             }
             foreach ($files as $file) {
                 $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
@@ -81,11 +101,11 @@ class ListCommand extends StubleCommand
         }
     }
 
-    protected function showFile ($num, $file)
+    protected function showFile($num, $file)
     {
-        $this->write($num.".", "brown");
-        $this->write(" [{$file['type']}]", "blue");
-        $this->writeln(" {$file['path']}");
+        $filetype = $file['type'];
+        $filepath = $file['path'];
+        $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
 
     public function getFiles()
@@ -108,7 +128,7 @@ class ListCommand extends StubleCommand
         }
 
         if ($local || $all) {
-            $localFiles = $this->getStubsFilesFromDirectory($workingPath.'/stubs');
+            $localFiles = $this->getStubsFilesFromDirectory($workingPath . '/stubs');
         }
 
         $files = [];
@@ -147,22 +167,21 @@ class ListCommand extends StubleCommand
         }
 
         if (!is_readable($dir)) {
-            $this->writeln("[warning] Cannot read directory '{$dir}'", "yellow");
+            $this->warning("[warning] Cannot read directory '{$dir}'");
             return [];
         }
 
         $files = array_diff(scandir($dir), ['.', '..']);
         $stubs = [];
         foreach ($files as $file) {
-            $path = $dir.'/'.$file;
+            $path = $dir . '/' . $file;
             if (is_dir($path)) {
                 $stubs = array_merge($stubs, $this->getStubsFilesFromDirectory($path, $baseDir));
             } elseif (pathinfo($path, PATHINFO_EXTENSION) === 'stub') {
-                $stubs[] = str_replace($baseDir.'/', '', $path);
+                $stubs[] = str_replace($baseDir . '/', '', $path);
             }
         }
 
         return $stubs;
     }
-
 }
