@@ -3,9 +3,18 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Stuble;
+use Emsifa\Stuble\Factory;
 
 abstract class StubleCommand extends Command
 {
+
+    protected $factory;
+
+    public function __construct()
+    {
+        parent::__construct($this->name);
+        $this->factory = new Factory;
+    }
 
     protected function findStubsFiles(string $stub)
     {
@@ -25,7 +34,7 @@ abstract class StubleCommand extends Command
             return [];
         }
 
-        return $this->findStubsFilesFromDirectory($envPath, $stub);
+        return $this->findStubsFilesFromDirectory($envPath.'/stubs', $stub);
     }
 
     protected function findStubsFilesFromDirectory(string $dir, string $stub)
@@ -48,12 +57,12 @@ abstract class StubleCommand extends Command
 
     protected function getWorkingPath()
     {
-        return realpath('.');
+        return $this->factory->getPath(Factory::KEY_WORKING_PATH);
     }
 
     protected function getEnvPath()
     {
-        return getenv('STUBS_PATH');
+        return $this->factory->getPath(Factory::KEY_ENV_PATH);
     }
 
     protected function includesStubleInits(Stuble $stuble, string $file)

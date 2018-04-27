@@ -5,6 +5,7 @@ namespace Emsifa\Stuble\Commands;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Emsifa\Stuble\Factory;
 
 class ListCommand extends StubleCommand
 {
@@ -56,7 +57,7 @@ class ListCommand extends StubleCommand
             } elseif ($local) {
                 $this->error("No stubs files found in this directory{$suffix}.");
             } elseif ($global) {
-                $this->error("No stubs files found in your STUBS_PATH{$suffix}.");
+                $this->error("No stubs files found in your \${STUBLE_HOME}/stubs{$suffix}.");
             }
             exit;
         }
@@ -103,8 +104,8 @@ class ListCommand extends StubleCommand
 
     protected function showFile($num, $file)
     {
-        $filetype = $file['type'];
-        $filepath = $file['path'];
+        $filetype = $file['source'] == Factory::KEY_WORKING_PATH ? 'L' : 'G';
+        $filepath = $file['source_path'];
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
 
@@ -114,36 +115,17 @@ class ListCommand extends StubleCommand
         $localFiles = [];
         $global = $this->option('global');
         $local = $this->option('local');
-        $all = (!$global && !$local) || ($global && $local);
 
-        $envPath = $this->getEnvPath();
-        $workingPath = $this->getWorkingPath();
-
-        if ($global && !$envPath) {
-            throw new \Exception("Cannot get files from global path. You must set STUBS_PATH in your environment variable.");
+        if ($global && !$this->factory->hasPath(Factory::KEY_ENV_PATH)) {
+            throw new \Exception("Cannot get files from global path. You must set STUBLE_HOME in your environment variable.");
         }
 
-        if (($global || $all) && $envPath) {
-            $globalFiles = $this->getStubsFilesFromDirectory($envPath);
-        }
-
-        if ($local || $all) {
-            $localFiles = $this->getStubsFilesFromDirectory($workingPath . '/stubs');
-        }
-
-        $files = [];
-        foreach ($localFiles as $file) {
-            $files[$file] = [
-                'type' => 'L',
-                'path' => $file
-            ];
-        }
-        foreach ($globalFiles as $file) {
-            if (isset($files[$file])) continue;
-            $files[$file] = [
-                'type' => 'G',
-                'path' => $file
-            ];
+        if ($global) {
+            $files = $this->factory->getStubsFilesFromPath(Factory::KEY_ENV_PATH);
+        } elseif ($local) {
+            $files = $this->factory->getStubsFilesFromPath(Factory::KEY_WORKING_PATH);
+        } else {
+            $files = $this->factory->getMergedStubsFiles();
         }
 
         return array_values($files);
@@ -152,36 +134,7 @@ class ListCommand extends StubleCommand
     protected function filterFiles(array $files, string $keyword)
     {
         return array_filter($files, function ($file) use ($keyword) {
-            return is_numeric(strpos($file['path'], $keyword));
+            return is_numeric(strpos($file['source_path'], $keyword));
         });
-    }
-
-    protected function getStubsFilesFromDirectory(string $dir, $baseDir = null)
-    {
-        if (!$baseDir) {
-            $baseDir = $dir;
-        }
-
-        if (!is_dir($dir)) {
-            return [];
-        }
-
-        if (!is_readable($dir)) {
-            $this->warning("[warning] Cannot read directory '{$dir}'");
-            return [];
-        }
-
-        $files = array_diff(scandir($dir), ['.', '..']);
-        $stubs = [];
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            if (is_dir($path)) {
-                $stubs = array_merge($stubs, $this->getStubsFilesFromDirectory($path, $baseDir));
-            } elseif (pathinfo($path, PATHINFO_EXTENSION) === 'stub') {
-                $stubs[] = str_replace($baseDir . '/', '', $path);
-            }
-        }
-
-        return $stubs;
     }
 }

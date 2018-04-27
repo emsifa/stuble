@@ -177,7 +177,7 @@ class GenerateStubCommand extends StubleCommand
 
         if (strpos($absFilePath, $envPath) === 0) {
             return [
-                'source' => '[STUBS_PATH]',
+                'source' => '[STUBLE_HOME]/stubs',
                 'relative_path' => substr($absFilePath, strlen($envPath)),
                 'absolute_path' => $absFilePath
             ];
