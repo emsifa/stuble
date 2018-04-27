@@ -32,30 +32,34 @@ class GenerateStubCommand extends StubleCommand
 
     protected function handle()
     {
-        $stub = $this->argument('stub');
+        $query = $this->argument('stub');
 
-        $stubsFiles = $this->findStubsFiles($stub);
+        $stubsFiles = $this->factory->findStubsFiles($query);
 
         if (empty($stubsFiles)) {
-            $this->error("Stub file '{$stub}.stub' not found.");
+            $this->error("Stub file '{$query}.stub' not found.");
         }
 
         if (count($stubsFiles) > 1) {
-            $this->text("# FOUND STUBS FILES");
+            $this->info("# FOUND STUBS FILES");
             foreach ($stubsFiles as $i => $file) {
-                $info = $this->getStubFileInfo($file);
-                $this->text(($i + 1) . ") {$info['source']}/{$info['relative_path']}");
+                $sourcePath = ltrim($file['source_path'], '/');
+                $sourceName = $file['source'];
+                $this->text("<fg=magenta>".($i + 1) . ")</> <fg=green>{$sourceName}</>/{$sourcePath}");
             }
             $this->nl();
         } else {
             $this->info("# FOUND STUB FILE");
-            $info = $this->getStubFileInfo($stubsFiles[0]);
-            $this->text("{$info['source']}/{$info['relative_path']}");
+            $sourcePath = ltrim($file['source_path'], '/');
+            $sourceName = $file['source'];
+            $this->writeln("<fg=green>{$sourceName}</>:{$sourcePath}");
             $this->nl();
         }
 
         $stubles = array_map(function ($file) {
-            return $this->makeStuble($file);
+            $sourcePath = ltrim($file['source_path'], '/');
+            $sourceName = $file['source'];
+            return $this->factory->makeStub($sourceName.':'.$sourcePath);
         }, $stubsFiles);
 
         $this->info("# FILL PARAMETERS");
@@ -113,15 +117,6 @@ class GenerateStubCommand extends StubleCommand
         $this->text($result);
     }
 
-    protected function makeStuble(string $file)
-    {
-        $stuble = new Stuble($file);
-        $stuble->filename = pathinfo($file, PATHINFO_FILENAME);
-        $this->includesStubleInits($stuble, $file);
-
-        return $stuble;
-    }
-
     protected function askParams(array $stubles)
     {
         $params = $this->collectParams($stubles);
@@ -167,33 +162,6 @@ class GenerateStubCommand extends StubleCommand
             if (!is_dir($path)) {
                 mkdir($path);
             }
-        }
-    }
-
-    protected function getStubFileInfo(string $absFilePath)
-    {
-        $envPath = $this->getEnvPath() . '/';
-        $workingPath = $this->getWorkingPath() . '/stubs/';
-
-        if (strpos($absFilePath, $envPath) === 0) {
-            return [
-                'source' => '[STUBLE_HOME]/stubs',
-                'relative_path' => substr($absFilePath, strlen($envPath)),
-                'absolute_path' => $absFilePath
-            ];
-        } elseif (strpos($absFilePath, $workingPath) === 0) {
-            return [
-                'source' => 'stubs',
-                'relative_path' => substr($absFilePath, strlen($workingPath)),
-                'absolute_path' => $absFilePath
-            ];
-        } else {
-            // IDK why I add this. Just to make sure maybe.
-            return [
-                'source' => 'unknown',
-                'relative_path' => $absFilePath,
-                'absolute_path' => $absFilePath
-            ];
         }
     }
 }

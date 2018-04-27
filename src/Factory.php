@@ -37,6 +37,7 @@ class Factory
 
         return $files;
     }
+
     public function getMergedStubsFiles(): array
     {
         $allFiles = $this->getStubsFiles();
@@ -53,21 +54,17 @@ class Factory
         return array_values($files);
     }
 
-    public function getStubsFilesFromPath(string $key): array
+    public function getStubsFilesFromPath(string $pathname): array
     {
-        if (!$this->hasPath($key)) {
-            throw new \UnexpectedValueException("Cannot get stubs files from path '{$key}'. Path '{$key}' is not available.");
+        if (!$this->hasPath($pathname)) {
+            throw new \UnexpectedValueException("Cannot get stubs files from path '{$pathname}'. Path '{$pathname}' is not available.");
         }
 
-        $path = $this->getPath($key);
+        $path = $this->getPath($pathname);
         $stubs = $this->getStubsFilesFromDirectory($path);
 
-        return array_map(function ($filepath) use ($key, $path) {
-            return [
-                'path' => $filepath,
-                'source' => $key,
-                'source_path' => str_replace($path, '', $filepath)
-            ];
+        return array_map(function ($filepath) use ($pathname, $path) {
+            $this->makeStubPathInfo($filepath, $pathname);
         }, $stubs);
     }
 
@@ -82,17 +79,17 @@ class Factory
         }
 
         $files = array_diff(scandir($dir), ['.', '..']);
-        $stubs = [];
+        $stubFiles = [];
         foreach ($files as $file) {
             $path = $dir . '/' . $file;
             if (is_dir($path)) {
-                $stubs = array_merge($stubs, $this->getStubsFilesFromDirectory($path, $baseDir));
+                $stubFiles = array_merge($stubFiles, $this->getStubsFilesFromDirectory($path, $baseDir));
             } elseif (pathinfo($path, PATHINFO_EXTENSION) === 'stub') {
-                $stubs[] = str_replace($baseDir . '/', '', $path);
+                $stubFiles[] = str_replace($baseDir . '/', '', $path);
             }
         }
 
-        return $stubs;
+        return $stubFiles;
     }
 
     public function hasStub(string $stub): bool
@@ -109,7 +106,14 @@ class Factory
             return null;
         }
 
-        return new Stuble($stubPath);
+        $stuble = new Stuble($stubPath);
+        $stuble->filename = pathinfo($stubPath, PATHINFO_FILENAME);
+        $initFiles = $this->getStubleInitFiles($stubPath);
+        foreach ($initFiles as $initFile) {
+            $this->includeStubleInitFile($initFile, $stuble);
+        }
+
+        return $stuble;
     }
 
     public function makeStub(string $stub): Stuble
@@ -139,12 +143,46 @@ class Factory
         return false;
     }
 
+    public function findStubsFiles(string $query): array
+    {
+        list($pathnames, $query) = $this->parsePath($query);
+
+        $results = [];
+        foreach ($pathnames as $pathname) {
+            $path = $this->getPath($pathname).'/stubs';
+            $files = $this->findStubsFilesFromDirectory($path, $query);
+            $results = array_merge($results, array_map(function ($filepath) use ($pathname) {
+                return $this->makeStubPathInfo($filepath, $pathname);
+            }, $files));
+        }
+
+        return $results;
+    }
+
+    protected function findStubsFilesFromDirectory(string $dir, string $query)
+    {
+        $dirPath = "{$dir}/{$query}";
+        $filePath = "{$dir}/{$query}.stub";
+        $wildcardPath = "{$dir}/{$query}.stub";
+        $files = [];
+
+        if (is_numeric(strpos($query, '*'))) {
+            return glob($wildcardPath);
+        } elseif (is_dir($dirPath)) {
+            $files = glob($dirPath . '/*.stub');
+        } elseif (is_file($filePath)) {
+            $files = [$filePath];
+        }
+
+        return $files;
+    }
+
     protected function parsePath(string $path): array
     {
         $exp = explode(':', $path, 2);
 
         if (count($exp) > 1) {
-            return [[$exp[0]], $exp[1]];
+            return [explode('|', $exp[0]), $exp[1]];
         } else {
             return [$this->getSortedPathNames(), $path];
         }
@@ -152,12 +190,14 @@ class Factory
 
     protected function getStubleInitFiles(string $file)
     {
-        if (strpos($file, $this->getWorkingPath()) === 0) {
-            $dir = $this->getWorkingPath().'/stubs';
-        } elseif (strpos($file, $this->getEnvPath()) === 0) {
-            $dir = $this->getEnvPath();
-        } else {
-            throw new \UnexpectedValueException("Failed to get stuble init files from '{$file}'. Argument 1 must be a path from global path or current path.");
+        $pathnames = $this->getSortedPathNames();
+        $dir = null;
+        foreach ($pathnames as $path) {
+            $stubsPath = $this->getPath($path).'/stubs';
+            if (strpos($file, $stubsPath) === 0) {
+                $dir = $stubsPath;
+                break;
+            }
         }
 
         $files = [];
@@ -175,5 +215,17 @@ class Factory
     {
         require($initFile);
     }
+
+    protected function makeStubPathInfo(string $filepath, string $pathname)
+    {
+        $path = $this->getPath($pathname);
+        return [
+            'path' => $filepath,
+            'source' => $pathname,
+            'source_path' => str_replace($path, '', $filepath)
+        ];
+    }
+
+
 
 }
