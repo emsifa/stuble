@@ -5,7 +5,7 @@ namespace Emsifa\Stuble\Commands;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Emsifa\Stuble\Factory;
+use Emsifa\Stuble\Stuble;
 
 class ListCommand extends StubleCommand
 {
@@ -104,7 +104,7 @@ class ListCommand extends StubleCommand
 
     protected function showFile($num, $file)
     {
-        $filetype = $file['source'] == Factory::KEY_WORKING_PATH ? 'L' : 'G';
+        $filetype = $file['source'] == Stuble::KEY_WORKING_PATH ? 'L' : 'G';
         $filepath = $file['source_path'];
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
@@ -116,16 +116,16 @@ class ListCommand extends StubleCommand
         $global = $this->option('global');
         $local = $this->option('local');
 
-        if ($global && !$this->factory->hasPath(Factory::KEY_ENV_PATH)) {
+        if ($global && !$this->stuble->hasPath(Stuble::KEY_ENV_PATH)) {
             throw new \Exception("Cannot get files from global path. You must set STUBLE_HOME in your environment variable.");
         }
 
         if ($global) {
-            $files = $this->factory->getStubsFilesFromPath(Factory::KEY_ENV_PATH);
+            $files = $this->stuble->getStubsFilesFromPath(Stuble::KEY_ENV_PATH);
         } elseif ($local) {
-            $files = $this->factory->getStubsFilesFromPath(Factory::KEY_WORKING_PATH);
+            $files = $this->stuble->getStubsFilesFromPath(Stuble::KEY_WORKING_PATH);
         } else {
-            $files = $this->factory->getMergedStubsFiles();
+            $files = $this->stuble->getMergedStubsFiles();
         }
 
         return array_values($files);

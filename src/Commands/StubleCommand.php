@@ -3,17 +3,16 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Stuble;
-use Emsifa\Stuble\Factory;
 
 abstract class StubleCommand extends Command
 {
 
-    protected $factory;
+    protected $stuble;
 
     public function __construct()
     {
         parent::__construct($this->name);
-        $this->factory = new Factory;
+        $this->stuble = new Stuble;
     }
 
 

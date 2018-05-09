@@ -2,166 +2,230 @@
 
 namespace Emsifa\Stuble;
 
-use Closure;
-
 class Stuble
 {
+    use Concerns\FactoryPathUtils;
 
-    use Concerns\FilterUtils;
-    use Concerns\HelperUtils;
+    const KEY_ENV_PATH = 'STUBLE_HOME';
+    const KEY_WORKING_PATH = '.';
 
-    protected $stub;
-    protected $params;
+    protected $paths = [];
 
-    public function __construct(string $filepath)
+    protected $defaultPath;
+
+    public function __construct()
     {
-        if (!file_exists($filepath)) {
-            throw new \Exception("Stub file '{$filepath}' not found.");
+        $this->registerDefaultPaths();
+    }
+
+    private function registerDefaultPaths() : void
+    {
+        $this->setPath(static::KEY_WORKING_PATH, realpath('.'), 999);
+        if ($envPath = getenv(static::KEY_ENV_PATH)) {
+            $this->setPath(static::KEY_ENV_PATH, $envPath, 0);
+        }
+    }
+
+    public function getStubsFiles(): array
+    {
+        $paths = $this->getSortedPathNames();
+        $files = [];
+
+        foreach ($paths as $path) {
+            $files = array_merge($files, $this->getStubsFilesFromPath($path));
         }
 
-        static::initializeGlobalFilters();
-        static::initializeGlobalHelpers();
-
-        $this->filepath = realpath($filepath);
-        $this->stub = file_get_contents($this->filepath);
-        $this->params = $this->parseParams($this->stub);
-
-        $this->filters = static::$globalFilters;
-        $this->helpers = static::$globalHelpers;
+        return $files;
     }
 
-    public function getFilepath()
+    public function getMergedStubsFiles(): array
     {
-        return $this->filepath;
-    }
+        $allFiles = $this->getStubsFiles();
 
-    public function getParams() : array
-    {
-        return $this->params;
-    }
-
-    public function getParamsValues($includeHelper = true)
-    {
-        $values = [];
-
-        foreach ($this->params as $param) {
-            if (!$includeHelper && $param['type'] == Parser::TYPE_HELPER) {
+        $files = [];
+        foreach ($allFiles as $file) {
+            if (isset($files[$file['source_path']])) {
                 continue;
             }
 
-            if (!isset($values[$param['key']])) {
-                $values[$param['key']] = $param['value'];
-            }
+            $files[$file['source_path']] = $file;
+        }
 
-            if (empty($values[$param['key']]) && $param['value']) {
-                $values[$param['key']] = $param['value'];
+        return array_values($files);
+    }
+
+    public function getStubsFilesFromPath(string $pathname): array
+    {
+        if (!$this->hasPath($pathname)) {
+            throw new \UnexpectedValueException("Cannot get stubs files from path '{$pathname}'. Path '{$pathname}' is not available.");
+        }
+
+        $path = $this->getPath($pathname);
+        $stubs = $this->getStubsFilesFromDirectory($path.'/stubs');
+
+        return array_map(function ($filepath) use ($pathname, $path) {
+            return $this->makeStubPathInfo($filepath, $pathname);
+        }, $stubs);
+    }
+
+    protected function getStubsFilesFromDirectory(string $dir, $baseDir = null)
+    {
+        if (!$baseDir) {
+            $baseDir = $dir;
+        }
+
+        if (!is_dir($dir) || !is_readable($dir)) {
+            return [];
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        $stubFiles = [];
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                $stubFiles = array_merge($stubFiles, $this->getStubsFilesFromDirectory($path, $baseDir));
+            } elseif (pathinfo($path, PATHINFO_EXTENSION) === 'stub') {
+                $stubFiles[] = str_replace($baseDir . '/', '', $path);
             }
         }
 
-        return $values;
+        return $stubFiles;
     }
 
-    public function setParamsValues(array $values)
+    public function hasStub(string $stub): bool
     {
-        $this->params = $this->fillValues($this->params, $values);
+        $stubPath = $this->findStubPath($stub);
+        return !is_null($stubPath);
     }
 
-    public function render(array $values = []) : Result
+    public function findStub(string $stub): ?Stub
     {
-        $this->setParamsValues($values);
+        $stubPath = $this->findStubPath($stub);
 
-        $params = $this->getParams();
-        $paramsValues = $this->getParamsValues();
-
-        usort($params, function ($a, $b) {
-            return strlen($a['code']) < strlen($b['code']);
-        });
-
-        $stub = $this->stub;
-        foreach ($params as $param) {
-            if ($param['type'] == 'arg') continue;
-
-            if ($param['type'] == Parser::TYPE_HELPER) {
-                $value = $this->applyHelper($param['key'], $this->resolveArgs($param['args'], $paramsValues));
-            } else {
-                $value = $param['value'];
-            }
-
-            foreach ($param['filters'] as $filter) {
-                $value = $this->applyFilter($filter['key'], $value, $this->resolveArgs($filter['args'], $paramsValues));
-            }
-
-            $stub = str_replace($param['code'], $value, $stub);
+        if (!$stubPath) {
+            return null;
         }
 
-        return new Result($stub);
-    }
-
-    protected function fillValues(array $params, array $values)
-    {
-        foreach ($params as $i => $param) {
-            if (isset($values[$param['key']])) {
-                $params[$i]['value'] = $values[$param['key']];
-            }
+        $stuble = new Stub($stubPath);
+        $stuble->filename = pathinfo($stubPath, PATHINFO_FILENAME);
+        $initFiles = $this->getStubleInitFiles($stubPath);
+        foreach ($initFiles as $initFile) {
+            $this->includeStubleInitFile($initFile, $stuble);
         }
 
-        return $params;
+        return $stuble;
     }
 
-    protected function parseParams(string $stub) : array
+    public function makeStub(string $stub): Stub
     {
-        $params = Parser::parse($stub);
+        $stuble = $this->findStub($stub);
+        if (!$stuble) {
+            throw new \UnexpectedValueException("Cannot make stub '{$stub}'. Stub file '{$stub}' doesn't exists.");
+        }
+        return $stuble;
+    }
 
-        $keys = array_unique(array_map(function ($param) {
-            return $param['key'];
-        }, $params));
-
-        foreach ($params as $i => $param) {
-            if (isset($param['args'])) {
-                foreach ($param['args'] as $arg) {
-                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
-                        $params[] = [
-                            'type' => 'arg',
-                            'key' => $arg['value'],
-                            'value' => '',
-                            'code' => null,
-                            'filters' => []
-                        ];
-                    }
-                }
+    public function findStubPath(string $stub): ?string
+    {
+        list($pathnames, $stub) = $this->parsePath($stub);
+        foreach ($pathnames as $pathname) {
+            $path = $this->getPath($pathname);
+            if (!$path) {
+                continue;
             }
 
-            foreach ($param['filters'] as $filter) {
-                foreach ($filter['args'] as $arg) {
-                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
-                        $params[] = [
-                            'type' => 'arg',
-                            'key' => $arg['value'],
-                            'value' => '',
-                            'code' => null,
-                            'filters' => []
-                        ];
-                    }
-                }
+            $stubPath = rtrim($path, '/') . '/' . ltrim($stub, '/');
+            if (is_file($stubPath)) {
+                return $stubPath;
             }
         }
 
-        return $params;
+        return false;
     }
 
-    protected function resolveArgs(array $args, array $paramsValues)
+    public function findStubsFiles(string $query): array
     {
+        list($pathnames, $query) = $this->parsePath($query);
+
         $results = [];
-        foreach ($args as $arg) {
-            if ($arg['type'] == Parser::PARAM_STR) {
-                $results[] = (string) $arg['value'];
-            } elseif ($arg['type'] == Parser::PARAM_NUM) {
-                $results[] = is_numeric(strpos($arg['value'], '.')) ? (float) $arg['value'] : (int) $arg['value'];
-            } elseif ($arg['type'] == Parser::PARAM_VAR) {
-                $results[] = isset($paramsValues[$arg['value']]) ? $paramsValues[$arg['value']] : null;
-            }
+        foreach ($pathnames as $pathname) {
+            $path = $this->getPath($pathname).'/stubs';
+            $files = $this->findStubsFilesFromDirectory($path, $query);
+            $results = array_merge($results, array_map(function ($filepath) use ($pathname) {
+                return $this->makeStubPathInfo($filepath, $pathname);
+            }, $files));
         }
+
         return $results;
     }
+
+    protected function findStubsFilesFromDirectory(string $dir, string $query)
+    {
+        $dirPath = "{$dir}/{$query}";
+        $filePath = "{$dir}/{$query}.stub";
+        $wildcardPath = "{$dir}/{$query}.stub";
+        $files = [];
+
+        if (is_numeric(strpos($query, '*'))) {
+            return glob($wildcardPath);
+        } elseif (is_dir($dirPath)) {
+            $files = glob($dirPath . '/*.stub');
+        } elseif (is_file($filePath)) {
+            $files = [$filePath];
+        }
+
+        return $files;
+    }
+
+    protected function parsePath(string $path): array
+    {
+        $exp = explode(':', $path, 2);
+
+        if (count($exp) > 1) {
+            return [explode('|', $exp[0]), $exp[1]];
+        } else {
+            return [$this->getSortedPathNames(), $path];
+        }
+    }
+
+    protected function getStubleInitFiles(string $file)
+    {
+        $pathnames = $this->getSortedPathNames();
+        $dir = null;
+        foreach ($pathnames as $path) {
+            $stubsPath = $this->getPath($path).'/stubs';
+            if (strpos($file, $stubsPath) === 0) {
+                $dir = $stubsPath;
+                break;
+            }
+        }
+
+        $files = [];
+        $paths = explode("/", str_replace($dir.'/', "", dirname($file)));
+
+        do {
+            $path = $dir . '/' . implode("/", $paths);
+            $files = array_merge($files, glob($path.'/stuble-init.php'));
+        } while (array_pop($paths));
+
+        return array_reverse($files);
+    }
+
+    protected function includeStubleInitFile(string $initFile, Stub $stuble)
+    {
+        require($initFile);
+    }
+
+    protected function makeStubPathInfo(string $filepath, string $pathname)
+    {
+        $path = $this->getPath($pathname);
+        return [
+            'path' => $filepath,
+            'source' => $pathname,
+            'source_path' => str_replace($path, '', $filepath)
+        ];
+    }
+
+
 
 }

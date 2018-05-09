@@ -34,7 +34,7 @@ class GenerateStubCommand extends StubleCommand
     {
         $query = $this->argument('stub');
 
-        $stubsFiles = $this->factory->findStubsFiles($query);
+        $stubsFiles = $this->stuble->findStubsFiles($query);
 
         if (empty($stubsFiles)) {
             $this->error("Stub file '{$query}.stub' not found.");
@@ -59,7 +59,7 @@ class GenerateStubCommand extends StubleCommand
         $stubles = array_map(function ($file) {
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
-            return $this->factory->makeStub($sourceName.':'.$sourcePath);
+            return $this->stuble->makeStub($sourceName.':'.$sourcePath);
         }, $stubsFiles);
 
         $this->info("# FILL PARAMETERS");
