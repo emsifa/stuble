@@ -61,7 +61,7 @@ class Factory
         }
 
         $path = $this->getPath($pathname);
-        $stubs = $this->getStubsFilesFromDirectory($path);
+        $stubs = $this->getStubsFilesFromDirectory($path.'/stubs');
 
         return array_map(function ($filepath) use ($pathname, $path) {
             return $this->makeStubPathInfo($filepath, $pathname);
