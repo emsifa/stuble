@@ -62,7 +62,7 @@ class {? entity.pascal ?} extends Model
 In that directory (in this example `/home/me/coding/try-stuble`), run command below:
 
 ```
-stuble create model
+stuble make model
 ```
 
 Then stuble will scan needed parameters in our `stubs/model.stub`,
@@ -92,7 +92,7 @@ Then make `stubs` directory inside that path.
 
 #### Generate Stubs in a Directory
 
-Just put `path/to/directory` instead `path/to/filename` in `stuble create` command.
+Just put `path/to/directory` instead `path/to/filename` in `stuble make` command.
 Stuble will collect parameters in stubs files inside that directory.
 Then generate results files.
 
@@ -109,11 +109,11 @@ For example if your `stubs` directory has structure like this:
     └── update-request.stub
 ```
 
-You can use `stuble create laravel-scaffolds` to generate `controller`, `factory`, `migration`, `model`, `resource`, `store-request`, and `update-request`.
+You can use `stuble make laravel-scaffolds` to generate `controller`, `factory`, `migration`, `model`, `resource`, `store-request`, and `update-request`.
 
 #### Define Output File Path in Stub File
 
-If you have your own standard filepath and don't want stuble ask for output filepath every `stuble create` that stub,
+If you have your own standard filepath and don't want stuble ask for output filepath every `stuble make` that stub,
 you can add line below at very top of your stub file:
 
 ```
@@ -218,10 +218,10 @@ stuble ls laravel -G
 
 #### Dump Result
 
-If you want to dump result instead of save it, you can use `--dump` in `stuble create` command.
+If you want to dump result instead of save it, you can use `--dump` in `stuble make` command.
 
 For example:
 
 ```
-stuble create laravel-scaffolds --dump
+stuble make laravel-scaffolds --dump
 ```
