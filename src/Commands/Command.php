@@ -93,7 +93,7 @@ abstract class Command extends SymfonyCommand
     protected function confirm(string $question, $default = false)
     {
         $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion($question, $default, '/^(y)/i');
+        $question = new ConfirmationQuestion($question.' ', $default, '/^(y)/i');
         return $helper->ask($this->input, $this->output, $question);
     }
 

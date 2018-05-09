@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 
-use Emsifa\Stuble\Commands\GenerateStubCommand;
-use Emsifa\Stuble\Commands\ListCommand;
+use Emsifa\Stuble\Commands\Make;
+use Emsifa\Stuble\Commands\Ls;
 use Emsifa\Stuble\Stuble;
 use Symfony\Component\Console\Application;
 
@@ -21,7 +21,7 @@ if (!class_exists(Stuble::class)) {
 
 $app = new Application('stuble', 'v0.1.0');
 
-$app->add(new GenerateStubCommand());
-$app->add(new ListCommand());
+$app->add(new Make());
+$app->add(new Ls());
 
 $app->run();

@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Emsifa\Stuble\Stuble;
 
-class ListCommand extends StubleCommand
+class Ls extends StubleCommand
 {
 
     protected $name = 'ls';

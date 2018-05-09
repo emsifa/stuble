@@ -2,7 +2,7 @@
 
 namespace Emsifa\Stuble\Concerns;
 
-use Emsifa\Stuble\Stuble;
+use Emsifa\Stuble\Stub;
 use Closure;
 
 trait HelperUtils
@@ -27,7 +27,7 @@ trait HelperUtils
                 $filepath .= '.stub';
             }
 
-            $stuble = new Stuble($filepath);
+            $stuble = new Stub($filepath);
 
             return $stuble->render($params);
         };

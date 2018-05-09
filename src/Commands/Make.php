@@ -3,16 +3,17 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Stuble;
+use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class GenerateStubCommand extends StubleCommand
+class Make extends StubleCommand
 {
 
-    protected $name = 'gen:stub';
+    protected $name = 'make';
     protected $description = 'Generate file by given stub file/directory.';
     protected $help = '';
 
@@ -49,6 +50,7 @@ class GenerateStubCommand extends StubleCommand
             }
             $this->nl();
         } else {
+            $file = $stubsFiles[0];
             $this->info("# FOUND STUB FILE");
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
@@ -82,7 +84,7 @@ class GenerateStubCommand extends StubleCommand
         }
     }
 
-    protected function askToSave(Result $result, Stuble $stuble)
+    protected function askToSave(Result $result, Stub $stuble)
     {
         $filename = $stuble->filename;
         $content = (string)$result;
@@ -100,7 +102,7 @@ class GenerateStubCommand extends StubleCommand
         $this->text("+ File '{$savePath}' saved!");
     }
 
-    protected function dumpResult(Result $result, Stuble $stuble)
+    protected function dumpResult(Result $result, Stub $stuble)
     {
         $params = $result->getParams();
         $stub = $stuble->filename;

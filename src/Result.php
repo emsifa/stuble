@@ -46,23 +46,25 @@ class Result
 
     protected function parseContent(string $content)
     {
-        $lines = explode("\n", $content);
-
         $params = [];
-        $regex = "/^## (?<key>\w+)\:(?<val>[^\n]+)/";
+        $regexParams = "/^===\n(.*\n)*===/";
+        if (preg_match($regexParams, $content)) {
+            $content = preg_replace($regexParams, "$1", $content);
+            $lines = explode("\n", $content);
+            while (count($lines)) {
+                $line = array_shift($lines);
+                $matched = preg_match("/(?<key>\w+): (?<val>[^\n]+)/", $line, $match);
+                if (!$matched) {
+                    array_unshift($lines, $line);
+                    break;
+                }
 
-        while (count($lines)) {
-            $line = array_shift($lines);
-            $matched = preg_match($regex, $line, $match);
-            if (!$matched) {
-                array_unshift($lines, $line);
-                break;
+                $params[$match['key']] = trim($match['val']);
             }
-
-            $params[$match['key']] = trim($match['val']);
+            $content = implode("\n", $lines);
         }
 
-        return [implode("\n", $lines), $params];
+        return [$content, $params];
     }
 
     protected function unparseContent(string $content, array $params)
