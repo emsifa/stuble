@@ -86,7 +86,7 @@ class Ls extends StubleCommand
             print(PHP_EOL);
             foreach ($ungroupeds as $file) {
                 $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
-                $this->showFile($num, $file);
+                $this->showFile($num, $file, $keyword);
             }
         }
 
@@ -97,15 +97,20 @@ class Ls extends StubleCommand
             }
             foreach ($files as $file) {
                 $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
-                $this->showFile($num, $file);
+                $this->showFile($num, $file, $keyword);
             }
         }
     }
 
-    protected function showFile($num, $file)
+    protected function showFile($num, $file, $keyword)
     {
         $filetype = $file['source'] == Stuble::KEY_WORKING_PATH ? 'L' : 'G';
         $filepath = $file['source_path'];
+
+        if ($keyword) {
+            $filepath = preg_replace("/{$keyword}/i", "<fg=yellow;options=bold>$0</>", $filepath);
+        }
+
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
 
@@ -134,7 +139,7 @@ class Ls extends StubleCommand
     protected function filterFiles(array $files, string $keyword)
     {
         return array_filter($files, function ($file) use ($keyword) {
-            return is_numeric(strpos($file['source_path'], $keyword));
+            return is_numeric(strpos(strtolower($file['source_path']), strtolower($keyword)));
         });
     }
 }
