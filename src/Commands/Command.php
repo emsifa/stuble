@@ -87,7 +87,7 @@ abstract class Command extends SymfonyCommand
     {
         $helper = $this->getHelper('question');
         if ($default) {
-            $question .= " [{$default}]";
+            $question .= " <fg=magenta>[{$default}]</>";
         }
         $question = new Question($question.' ');
         return $helper->ask($this->input, $this->output, $question);
