@@ -3,6 +3,7 @@
 
 use Emsifa\Stuble\Commands\Make;
 use Emsifa\Stuble\Commands\Ls;
+use Emsifa\Stuble\Commands\Serve;
 use Emsifa\Stuble\Stuble;
 use Symfony\Component\Console\Application;
 
@@ -19,9 +20,10 @@ if (!class_exists(Stuble::class)) {
     exit;
 }
 
-$app = new Application('stuble', 'v0.1.0');
+$app = new Application('stuble', 'v0.2.0');
 
 $app->add(new Make());
 $app->add(new Ls());
+$app->add(new Serve());
 
 $app->run();

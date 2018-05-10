@@ -2,7 +2,7 @@
 
 namespace Emsifa\Stuble\Concerns;
 
-trait FactoryPathUtils
+trait StublePathUtils
 {
 
     public function hasPath(string $key): bool

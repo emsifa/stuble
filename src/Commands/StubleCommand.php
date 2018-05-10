@@ -15,7 +15,6 @@ abstract class StubleCommand extends Command
         $this->stuble = new Stuble;
     }
 
-
     public function getWorkingPath()
     {
         return realpath('.');

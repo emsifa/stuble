@@ -4,7 +4,7 @@ namespace Emsifa\Stuble;
 
 class Stuble
 {
-    use Concerns\FactoryPathUtils;
+    use Concerns\StublePathUtils;
 
     const KEY_ENV_PATH = 'STUBLE_HOME';
     const KEY_WORKING_PATH = '.';

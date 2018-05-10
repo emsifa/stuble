@@ -86,6 +86,9 @@ abstract class Command extends SymfonyCommand
     protected function ask(string $question, $default = null)
     {
         $helper = $this->getHelper('question');
+        if ($default) {
+            $question .= " [{$default}]";
+        }
         $question = new Question($question.' ');
         return $helper->ask($this->input, $this->output, $question);
     }
