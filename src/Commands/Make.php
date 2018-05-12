@@ -58,28 +58,28 @@ class Make extends StubleCommand
             $this->nl();
         }
 
-        $stubles = array_map(function ($file) {
+        $stubs = array_map(function ($file) {
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
             return $this->stuble->makeStub($sourceName.':'.$sourcePath);
         }, $stubsFiles);
 
         $this->info("# FILL PARAMETERS");
-        $paramsValues = $this->askParams($stubles);
+        $paramsValues = $this->askParams($stubs);
 
         $dump = $this->option('dump');
 
         if (!$dump) {
             $this->nl();
             $this->info("# SAVING FILES");
-            foreach ($stubles as $stuble) {
-                $result = $stuble->render($paramsValues);
-                $this->askToSave($result, $stuble);
+            foreach ($stubs as $stub) {
+                $result = $stub->render($paramsValues);
+                $this->askToSave($result, $stub);
             }
         } else {
-            foreach ($stubles as $stuble) {
-                $result = $stuble->render($paramsValues);
-                $this->dumpResult($result, $stuble);
+            foreach ($stubs as $stub) {
+                $result = $stub->render($paramsValues);
+                $this->dumpResult($result, $stub);
             }
         }
     }

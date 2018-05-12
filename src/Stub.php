@@ -84,7 +84,7 @@ class Stub
             if ($param['type'] == Parser::TYPE_HELPER) {
                 $value = $this->applyHelper($param['key'], $this->resolveArgs($param['args'], $paramsValues));
             } else {
-                $value = $param['value'];
+                $value = $param['value'] ?: $paramsValues[$param['key']];
             }
 
             foreach ($param['filters'] as $filter) {
