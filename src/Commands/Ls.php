@@ -62,10 +62,22 @@ class Ls extends StubleCommand
             exit;
         }
 
+        uasort($files, function ($a, $b) {
+            $ca = count(explode('/', $a['path']));
+            $cb = count(explode('/', $b['path']));
+
+            if ($ca == $cb) {
+                return $a['path'] > $b['path'];
+            } else {
+                return $ca > $cb;
+            }
+        });
+
         $ungroupeds = [];
         $groupeds = [];
         foreach ($files as $file) {
-            $dir = dirname($file['path']);
+            $split = explode('/', $file['path']);
+            $dir = count($split) > 1 ? $split[0] : '.';
 
             if ($dir == '.') {
                 $ungroupeds[] = $file;
@@ -93,7 +105,7 @@ class Ls extends StubleCommand
         foreach ($groupeds as $dir => $files) {
             if (!$flatten) {
                 print(PHP_EOL);
-                $this->success(str_repeat(' ', $d) . "  {$dir}");
+                $this->writeln("<fg=green;options=bold>".str_repeat(' ', $d) . "  {$dir}</>");
             }
             foreach ($files as $file) {
                 $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
@@ -109,6 +121,12 @@ class Ls extends StubleCommand
 
         if ($keyword) {
             $filepath = preg_replace("/{$keyword}/i", "<fg=yellow;options=bold>$0</>", $filepath);
+        }
+
+        $split = explode('/', $filepath);
+        if (count($split) > 2) {
+            $dir = dirname($filepath);
+            $filepath = str_replace($dir, "<fg=green;options=bold>{$dir}</>", $filepath);
         }
 
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");

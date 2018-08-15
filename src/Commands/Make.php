@@ -28,21 +28,25 @@ class Make extends StubleCommand
         'dump' => [
             'alias' => 'd',
             'description' => 'Dump render results.'
+        ],
+        'no-subdir' => [
+            'description' => 'Without subdirectories.'
         ]
     ];
 
     protected function handle()
     {
         $query = $this->argument('stub');
+        $subdir = !$this->option('no-subdir');
 
-        $stubsFiles = $this->stuble->findStubsFiles($query);
+        $stubsFiles = $this->stuble->findStubsFiles($query, $subdir);
 
         if (empty($stubsFiles)) {
             $this->error("Stub file '{$query}.stub' not found.");
         }
 
         if (count($stubsFiles) > 1) {
-            $this->info("# FOUND STUBS FILES");
+            $this->info("# STUBS FILES");
             foreach ($stubsFiles as $i => $file) {
                 $sourcePath = ltrim($file['source_path'], '/');
                 $sourceName = $file['source'];
@@ -51,7 +55,7 @@ class Make extends StubleCommand
             $this->nl();
         } else {
             $file = $stubsFiles[0];
-            $this->info("# FOUND STUB FILE");
+            $this->info("# STUB FILE");
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
             $this->writeln("<fg=green>{$sourceName}</>:{$sourcePath}");

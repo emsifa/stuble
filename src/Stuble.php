@@ -143,14 +143,14 @@ class Stuble
         return false;
     }
 
-    public function findStubsFiles(string $query): array
+    public function findStubsFiles(string $query, $subdirs = true): array
     {
         list($pathnames, $query) = $this->parsePath($query);
 
         $results = [];
         foreach ($pathnames as $pathname) {
             $path = $this->getPath($pathname).'/stubs';
-            $files = $this->findStubsFilesFromDirectory($path, $query);
+            $files = $this->findStubsFilesFromDirectory($path, $query, $subdirs);
             $results = array_merge($results, array_map(function ($filepath) use ($pathname) {
                 return $this->makeStubPathInfo($filepath, $pathname);
             }, $files));
@@ -159,7 +159,7 @@ class Stuble
         return $results;
     }
 
-    protected function findStubsFilesFromDirectory(string $dir, string $query)
+    protected function findStubsFilesFromDirectory(string $dir, string $query, $subdirs = true)
     {
         $dirPath = "{$dir}/{$query}";
         $filePath = "{$dir}/{$query}.stub";
@@ -172,6 +172,16 @@ class Stuble
             $files = glob($dirPath . '/*.stub');
         } elseif (is_file($filePath)) {
             $files = [$filePath];
+        }
+
+        if ($subdirs && is_dir($dirPath)) {
+            $subdirs = array_filter(array_diff(scandir($dirPath), ['.', '..']), function ($file) use ($dirPath) {
+                return is_dir($dirPath.'/'.$file);
+            });
+
+            foreach ($subdirs as $subdir) {
+                $files = array_merge($files, $this->findStubsFilesFromDirectory($dirPath, $subdir, true));
+            }
         }
 
         return $files;
