@@ -47,7 +47,7 @@ class Result
     protected function parseContent(string $content)
     {
         $params = [];
-        $regexParams = "/^===\n(.*\n)*===/";
+        $regexParams = "/^===\n(.*\n)*===\n/";
         if (preg_match($regexParams, $content)) {
             $content = preg_replace($regexParams, "$1", $content);
             $lines = explode("\n", $content);
