@@ -5,6 +5,7 @@ namespace Emsifa\Stuble\Commands;
 use Emsifa\Stuble\Gitignore;
 use Emsifa\Stuble\Stuble;
 use Emsifa\Stuble\Parser;
+use Emsifa\Stuble\Filters;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -109,6 +110,18 @@ class Stublify extends StubleCommand
                 'files' => $files,
                 'parameter' => $parameter
             ];
+
+            if ($this->confirm("Do you want to replace other formats of '{$text}' [Y/n]?", true)) {
+                $otherFormats = $this->findOtherFormats($tempFiles, $text, $parameter, $replaces);
+                if (count($otherFormats)) {
+                    foreach ($otherFormats as $text => $data) {
+                        $num = number_format(count($data['files']), 0);
+                        $param = $data['parameter']['key'].'.'.implode('.', $data['parameter']['filters']);
+                        $this->info("- {$text} = {$param} ({$num} files)");
+                    }
+                    $replaces = array_merge($replaces, $otherFormats);
+                }
+            }
         }
 
         // COOK IT!
@@ -163,6 +176,58 @@ class Stublify extends StubleCommand
             $this->nl();
             $this->info("Type <fg=green;options=bold>'stuble ls {$dest}'</> to see your generated stubs file.");
         }
+    }
+
+    protected function findOtherFormats(array $tempFiles, $text, $parameter, $excepts = [])
+    {
+        $filters = new Filters;
+        $usedFilters = $parameter['filters'] ?: [];
+        $availableFilters = [
+            'singular',
+            'plural',
+            'kebab',
+            'snake',
+            'camel',
+            'pascal',
+            'studly',
+            'title',
+            'words',
+        ];
+
+        $otherFormats = [];
+        foreach ($availableFilters as $filter) {
+            if (in_array($filter, $usedFilters)) {
+                continue;
+            }
+
+            $filteredText = $filters->{$filter}($text);
+            if (!isset($excepts[$filteredText])) {
+                $files = $this->findFilesContains($filteredText, $tempFiles);
+                if (count($files)) {
+                    $otherFormats[$filteredText] = [
+                        'files' => $files,
+                        'parameter' => array_merge($parameter, [
+                            'filters' => array_merge($usedFilters, [$filter]),
+                            'code' => '{? '.$parameter['key'].'.'.implode('.', array_merge($usedFilters, [$filter])).' ?}'
+                        ])
+                    ];
+                }
+            }
+        }
+
+        foreach ($otherFormats as $text => $data) {
+            $otherFormats = array_merge(
+                $otherFormats,
+                $this->findOtherFormats(
+                    $data['files'],
+                    $text,
+                    $data['parameter'],
+                    array_merge($excepts, $otherFormats)
+                )
+            );
+        }
+
+        return $otherFormats;
     }
 
     protected function process($info, callable $process)
