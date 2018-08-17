@@ -182,12 +182,22 @@ class Make extends StubleCommand
     protected function appendBefore($dest, $text, $keyword)
     {
         $line = $this->findLineNumber($dest, $keyword);
+
+        if (!file_exists($dest)) {
+            $text = $text."\n".$keyword."\n";
+        }
+
         $this->appendToLine($dest, $text, $line);
     }
 
     protected function appendAfter($dest, $text, $keyword)
     {
         $line = $this->findLineNumber($dest, $keyword);
+
+        if (!file_exists($dest)) {
+            $text = $keyword."\n".$text;
+        }
+
         $this->appendToLine($dest, $text, $line + 1);
     }
 
@@ -196,11 +206,16 @@ class Make extends StubleCommand
         if ($line < 1) {
             return file_put_contents($dest, $text);
         }
+
+        if (!file_exists($dest)) {
+            return file_put_contents($dest, $text);
+        }
+
         $lines = explode("\n", file_get_contents($dest));
         array_splice($lines, $line - 1, 0, $text);
 
         $content = implode("\n", $lines);
-        file_put_contents($dest, $content);
+        return file_put_contents($dest, $content);
     }
 
     protected function findLineNumber($dest, $keyword)
