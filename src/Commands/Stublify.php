@@ -50,6 +50,8 @@ class Stublify extends StubleCommand
         $stubsPath = $global ? $this->stuble->getPath('STUBLE_HOME').'/stubs' : $this->stuble->getPath('.').'/stubs';
         $destPath = $stubsPath.'/'.$dest;
 
+        // DO SOME CHECKS AND CONFIRMATION
+        // -------------------------------------------------------------------------
         if (!$filepath) {
             return $this->error("File or directory '{$file}' is not exists.");
         }
@@ -58,18 +60,34 @@ class Stublify extends StubleCommand
             return $this->error("Whoops! Seems like you have '{$file}' exists in your stubs directory. Use '-f' to force rewrite.");
         }
 
+        if (file_exists($destPath) && $force) {
+            $this->warning("\n[WARNING]\nYour current '{$file}' stub(s) will be deleted and replaced with new one.");
+            if (!$this->confirm("Do you want to continue [y/N]?", false)) {
+                $this->info("Canceled!");
+                exit;
+            }
+        }
+
+        // COLLECTING FILES
+        // -------------------------------------------------------------------------
         $gitignore = $this->makeGitignore($filepath, $workingPath);
         $files = $this->getFiles($filepath, $gitignore);
 
+        // CREATE TEMP FILES
+        // -------------------------------------------------------------------------
         $this->tempDir = $workingPath.'/tmp-stublify-'.uniqid().'';
+
+        // Clean temporary files if user interrupts (Ctrl+C)
         pcntl_signal(SIGTERM, [&$this, 'cleanup']);
         pcntl_signal(SIGINT, [&$this, 'cleanup']);
 
-        $tempFiles = $this->createTempFiles($files, $filepath);
+        $tempFiles = $this->createTempFiles($files, $workingPath);
 
+        // COLLECTING TEXTS TO REPLACES
+        // -------------------------------------------------------------------------
         $replaces = [];
         while (true) {
-            echo PHP_EOL;
+            $this->nl();
             $text = $this->askTextToReplace();
             if (!$text) break;
 
@@ -93,16 +111,65 @@ class Stublify extends StubleCommand
             ];
         }
 
+        // COOK IT!
+        // -------------------------------------------------------------------------
+
+        // Sort $replaces keys and reverse it so longest text will be replaced first
         ksort($replaces, SORT_NATURAL);
         $replaces = array_reverse($replaces);
 
-        foreach ($replaces as $text => $data) {
-            foreach ($data['files'] as $file) {
-                $this->replaceTextInFile($text, $data['parameter']['code'], $file);
+        $this->nl();
+
+        // > Replace Text With Parameter
+        $this->process("Replacing text with parameter", function () use ($replaces) {
+            foreach ($replaces as $text => $data) {
+                foreach ($data['files'] as $file) {
+                    $this->replaceTextInFile($text, $data['parameter']['code'], $file);
+                }
             }
+        });
+
+        // > Put output path configuration to each stubs files
+        $this->process("Putting output path configuration", function () use ($tempFiles, $replaces) {
+            foreach ($tempFiles as $file) {
+                $relativePath = str_replace($this->tempDir.'/', "", $file);
+                $relativePath = preg_replace("/\.stub$/", "", $relativePath);
+                foreach ($replaces as $text => $data) {
+                    $relativePath = str_replace($text, $data['parameter']['code'], $relativePath);
+                }
+                $content = file_get_contents($file);
+                $content = $this->putConfigs($content, [
+                    'path' => $relativePath
+                ]);
+                file_put_contents($file, $content);
+            }
+        });
+
+        // > Removing current stubs file
+        if (file_exists($destPath)) {
+            $this->process("Removing current stubs file", function () use ($destPath) {
+                $this->removeFileOrDirectory($destPath);
+            });
         }
 
-        rename($this->tempDir, $destPath);
+        // > Generating stubs file (moving temporary files to destination)
+        $this->process("Generating stubs file", function () use ($destPath) {
+            rename($this->tempDir, $destPath);
+        });
+
+        // DONE
+        // -------------------------------------------------------------------------
+        if (is_dir($destPath)) {
+            $this->nl();
+            $this->info("Type <fg=green;options=bold>'stuble ls {$dest}'</> to see your generated stubs file.");
+        }
+    }
+
+    protected function process($info, callable $process)
+    {
+        $this->write($info." ... ", "info");
+        call_user_func($process);
+        $this->success("DONE");
     }
 
     protected function askParameter($text)
@@ -163,6 +230,17 @@ class Stublify extends StubleCommand
         $content = file_get_contents($file);
         $content = str_replace($text, $replaced, $content);
         return file_put_contents($file, $content);
+    }
+
+    protected function putConfigs($content, array $configs)
+    {
+        $lines[] = "===";
+        foreach ($configs as $key => $value) {
+            $lines[] = "{$key}: {$value}";
+        }
+        $lines[] = "===";
+        $lines[] = $content;
+        return implode("\n", $lines);
     }
 
     protected function makeDirectory($directory)

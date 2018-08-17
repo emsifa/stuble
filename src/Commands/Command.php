@@ -102,6 +102,12 @@ abstract class Command extends SymfonyCommand
         return $helper->ask($this->input, $this->output, $question);
     }
 
+    protected function write(string $text, $style = null, array $options = [])
+    {
+        $text = $this->formatText($text, $style, $options);
+        return $this->output->write($text);
+    }
+
     protected function writeln(string $text, $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
