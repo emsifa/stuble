@@ -93,12 +93,12 @@ class Make extends StubleCommand
         $filename = $stuble->filename;
         $content = (string)$result;
         $savePath = $result->getSavePath();
-        $appendPath = $result->getAppendPath();
+        $append = $result->getAppendOption();
 
-        if ($appendPath) {
-            $dest = $this->getWorkingPath().'/'.$appendPath;
-            $this->append($dest, $content);
-            $this->text("+ File '{$appendPath}' appended!");
+        if ($append) {
+            $dest = $this->getWorkingPath().'/'.$append['file'];
+            $this->append($content, $append);
+            $this->text("+ File '{$append['file']}' appended!");
         } else {
             if (!$savePath) {
                 $savePath = $this->ask("Set {$filename} save path:");
@@ -117,19 +117,10 @@ class Make extends StubleCommand
 
     protected function dumpResult(Result $result, Stub $stuble)
     {
-        $params = $result->getParams();
         $stub = $stuble->filename;
-
-        $len = max(array_map(function ($k) {
-            return strlen($k);
-        }, array_keys($params)));
-
         $this->nl();
         $this->info("[{$stub}]" . PHP_EOL);
-        foreach ($params as $key => $value) {
-            $this->text(str_pad($key, $len, " ", STR_PAD_RIGHT) . " : {$value}");
-        }
-        $this->text($result);
+        $this->text($result->getRawContent());
     }
 
     protected function askParams(array $stubles)
@@ -168,10 +159,65 @@ class Make extends StubleCommand
         file_put_contents($dest, $content);
     }
 
-    protected function append(string $dest, string $content)
+    protected function append(string $text, $appendOption)
     {
+        $dest = $this->getWorkingPath().'/'.$appendOption['file'];
+        $after = $appendOption['after'];
+        $before = $appendOption['before'];
+        $line = $appendOption['line'];
+
         $this->createDirectoryIfNotExists(dirname($dest));
-        file_put_contents($dest, $content, FILE_APPEND);
+
+        if ($before) {
+            return $this->appendBefore($dest, $text, $before);
+        } elseif($after) {
+            return $this->appendAfter($dest, $text, $after);
+        } elseif($line) {
+            return $this->appendToLine($dest, $text, $line);
+        } else {
+            return file_put_contents($dest, "\n".$text, FILE_APPEND);
+        }
+    }
+
+    protected function appendBefore($dest, $text, $keyword)
+    {
+        $line = $this->findLineNumber($dest, $keyword);
+        $this->appendToLine($dest, $text, $line);
+    }
+
+    protected function appendAfter($dest, $text, $keyword)
+    {
+        $line = $this->findLineNumber($dest, $keyword);
+        $this->appendToLine($dest, $text, $line + 1);
+    }
+
+    protected function appendToLine($dest, $text, $line)
+    {
+        if ($line < 1) {
+            return file_put_contents($dest, $text);
+        }
+        $lines = explode("\n", file_get_contents($dest));
+        array_splice($lines, $line - 1, 0, $text);
+
+        $content = implode("\n", $lines);
+        file_put_contents($dest, $content);
+    }
+
+    protected function findLineNumber($dest, $keyword)
+    {
+        if (!file_exists($dest)) {
+            return 0;
+        }
+
+        $lines = explode("\n", file_get_contents($dest));
+        $regex = "/".preg_quote($keyword, "/")."/";
+        foreach ($lines as $i => $line) {
+            if (preg_match($regex, $line)) {
+                return $i + 1;
+            }
+        }
+
+        return 0;
     }
 
     protected function createDirectoryIfNotExists($dir)

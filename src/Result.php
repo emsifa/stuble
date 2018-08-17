@@ -2,21 +2,27 @@
 
 namespace Emsifa\Stuble;
 
+use Symfony\Component\Yaml\Yaml;
+use Yosymfony\Toml\Toml;
+use Yosymfony\Toml\TomlBuilder;
+
 class Result
 {
 
+    protected $rawContent;
     protected $content;
 
-    protected $params = [];
+    protected $options = [];
 
     public function __construct(string $content)
     {
-        list($this->content, $this->params) = $this->parseContent($content);
+        $this->rawContent = $content;
+        list($this->content, $this->options) = $this->parseContent($content);
     }
 
     public function getRawContent()
     {
-        return $this->unparseContent($this->content, $this->params);
+        return $this->rawContent;
     }
 
     public function getContent()
@@ -26,22 +32,39 @@ class Result
 
     public function getSavePath()
     {
-        return $this->getParam('path') ?: '';
+        return $this->getOption('path') ?: '';
     }
 
-    public function getAppendPath()
+    public function getAppendOption()
     {
-        return $this->getParam('append');
+        $append = $this->getOption('append');
+        if (empty($append)) {
+            return null;
+        }
+
+        $defaults = [
+            'after' => null,
+            'before' => null,
+            'line' => null,
+        ];
+
+        if (is_string($append)) {
+            return array_merge($defaults, [
+                'file' => $append,
+            ]);
+        } else {
+            return array_merge($defaults, $append);
+        }
     }
 
-    public function getParam(string $key)
+    public function getOption(string $key)
     {
-        return isset($this->params[$key]) ? $this->params[$key] : null;
+        return isset($this->options[$key]) ? $this->options[$key] : null;
     }
 
-    public function getParams()
+    public function getOptions()
     {
-        return $this->params;
+        return $this->options;
     }
 
     public function __toString()
@@ -51,35 +74,19 @@ class Result
 
     protected function parseContent(string $content)
     {
-        $params = [];
-        $regexParams = "/^===\n(.*\n)*===\n/";
-        if (preg_match($regexParams, $content)) {
-            $content = preg_replace($regexParams, "$1", $content);
-            $lines = explode("\n", $content);
-            while (count($lines)) {
-                $line = array_shift($lines);
-                $matched = preg_match("/(?<key>\w+): (?<val>[^\n]+)/", $line, $match);
-                if (!$matched) {
-                    array_unshift($lines, $line);
-                    break;
-                }
-
-                $params[$match['key']] = trim($match['val']);
+        $options = [];
+        $regexOptions = "/^===\n\r?(?<options>(.*\n\r?)*)===\n\r?/";
+        if (preg_match($regexOptions, $content, $match)) {
+            $content = preg_replace($regexOptions, "", $content);
+            $options = $match['options'];
+            try {
+                $options = Toml::parse($options);
+            } catch (\Exception $e) {
+                $options = Yaml::parse($options);
             }
-            $content = implode("\n", $lines);
         }
 
-        return [$content, $params];
-    }
-
-    protected function unparseContent(string $content, array $params)
-    {
-        $paramsContent = [];
-        foreach ($params as $key => $val) {
-            $paramsContent[] = "## {$key}: {$val}";
-        }
-
-        return implode("\n", $paramsContent) . "\n" . $content;
+        return [$content, $options];
     }
 
 }
