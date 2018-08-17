@@ -3,15 +3,17 @@
 namespace Emsifa\Stuble\Commands;
 
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Question\Question;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 abstract class Command extends SymfonyCommand
 {
@@ -163,9 +165,18 @@ abstract class Command extends SymfonyCommand
         }
     }
 
+    protected function dump()
+    {
+        foreach(func_get_args() as $arg) {
+            var_dump($arg);
+        }
+        exit;
+    }
+
     protected function nl()
     {
         $this->writeln('');
     }
+
 
 }

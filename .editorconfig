@@ -2,5 +2,11 @@ root = true
 
 [*]
 indent_style = space
-indent_size = 4
+indent_size = 2
 trim_trailing_whitespace = true
+
+[*.php]
+indent_size = 4
+
+[gui/src/routes/index.php]
+indent_size = 2

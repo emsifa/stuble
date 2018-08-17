@@ -1,8 +1,10 @@
 #!/usr/bin/env php
 <?php
 
-use Emsifa\Stuble\Commands\Make;
+use Emsifa\Stuble\Commands\Command;
 use Emsifa\Stuble\Commands\Ls;
+use Emsifa\Stuble\Commands\Make;
+use Emsifa\Stuble\Commands\Stublify;
 use Emsifa\Stuble\Stuble;
 use Symfony\Component\Console\Application;
 
@@ -23,5 +25,6 @@ $app = new Application('stuble', 'v0.2.5');
 
 $app->add(new Make());
 $app->add(new Ls());
+$app->add(new Stublify());
 
 $app->run();

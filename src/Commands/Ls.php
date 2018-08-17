@@ -120,6 +120,7 @@ class Ls extends StubleCommand
         $filepath = $file['source_path'];
 
         if ($keyword) {
+            $keyword = preg_quote($keyword, "/");
             $filepath = preg_replace("/{$keyword}/i", "<fg=yellow;options=bold>$0</>", $filepath);
         }
 
