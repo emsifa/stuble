@@ -29,6 +29,11 @@ class Result
         return $this->getParam('path') ?: '';
     }
 
+    public function getAppendPath()
+    {
+        return $this->getParam('append');
+    }
+
     public function getParam(string $key)
     {
         return isset($this->params[$key]) ? $this->params[$key] : null;

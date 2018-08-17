@@ -93,17 +93,26 @@ class Make extends StubleCommand
         $filename = $stuble->filename;
         $content = (string)$result;
         $savePath = $result->getSavePath();
-        if (!$savePath) {
-            $savePath = $this->ask("Set {$filename} save path:");
-        }
-        $dest = $this->getWorkingPath() . '/' . $savePath;
+        $appendPath = $result->getAppendPath();
 
-        if (is_file($dest) && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
-            return;
-        }
+        if ($appendPath) {
+            $dest = $this->getWorkingPath().'/'.$appendPath;
+            $this->append($dest, $content);
+            $this->text("+ File '{$appendPath}' appended!");
+        } else {
+            if (!$savePath) {
+                $savePath = $this->ask("Set {$filename} save path:");
+            }
 
-        $this->save($dest, $content);
-        $this->text("+ File '{$savePath}' saved!");
+            $dest = $this->getWorkingPath() . '/' . $savePath;
+
+            if (is_file($dest) && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
+                return;
+            }
+
+            $this->save($dest, $content);
+            $this->text("+ File '{$savePath}' saved!");
+        }
     }
 
     protected function dumpResult(Result $result, Stub $stuble)
@@ -157,6 +166,12 @@ class Make extends StubleCommand
     {
         $this->createDirectoryIfNotExists(dirname($dest));
         file_put_contents($dest, $content);
+    }
+
+    protected function append(string $dest, string $content)
+    {
+        $this->createDirectoryIfNotExists(dirname($dest));
+        file_put_contents($dest, $content, FILE_APPEND);
     }
 
     protected function createDirectoryIfNotExists($dir)
