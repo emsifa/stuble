@@ -31,6 +31,11 @@ class Make extends StubleCommand
         ],
         'no-subdir' => [
             'description' => 'Without subdirectories.'
+        ],
+        'excludes' => [
+            'alias' => 'e',
+            'type' => InputOption::VALUE_OPTIONAL,
+            'description' => 'Exclude some files.'
         ]
     ];
 
@@ -38,11 +43,16 @@ class Make extends StubleCommand
     {
         $query = $this->argument('stub');
         $subdir = !$this->option('no-subdir');
+        $excludes = $this->option('excludes');
 
         $stubsFiles = $this->stuble->findStubsFiles($query, $subdir);
 
         if (empty($stubsFiles)) {
             $this->error("Stub file '{$query}.stub' not found.");
+        }
+
+        if ($excludes) {
+            $stubsFiles = $this->excludeFiles($stubsFiles, $excludes, "/stubs/{$query}");
         }
 
         if (count($stubsFiles) > 1) {
@@ -86,6 +96,47 @@ class Make extends StubleCommand
                 $this->dumpResult($result, $stub);
             }
         }
+    }
+
+    protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath)
+    {
+        $excludes = array_map(function($pattern) {
+            $pattern = trim($pattern);
+            $hasAsterisk = strpos($pattern, '*');
+            if (!$hasAsterisk) {
+                return [
+                    'type' => 'exact',
+                    'pattern' => preg_replace("/\.stub$/", "", $pattern).".stub"
+                ];
+            } else {
+                $replacers = [
+                    "\*\*" => "[^\\n]+",
+                    "\*" => "[^\/]+(\.\w+)?$",
+                ];
+
+                $pattern = preg_quote($pattern, "/");
+                foreach ($replacers as $search => $regex) {
+                    $pattern = str_replace($search, $regex, $pattern);
+                }
+
+                return [
+                    'type' => 'regex',
+                    'pattern' => "/".$pattern."/"
+                ];
+            }
+        }, explode(",", $excludes));
+
+        return array_filter($stubsFiles, function ($file) use ($excludes, $basepath) {
+            $filepath = preg_replace("/^".preg_quote($basepath, "/")."\//", "", $file['source_path']);
+            foreach ($excludes as $pattern) {
+                if ($pattern['type'] == 'exact' && $filepath == $pattern['pattern']) {
+                    return false;
+                } elseif($pattern['type'] == 'regex' && preg_match($pattern['pattern'], $filepath)) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 
     protected function askToSave(Result $result, Stub $stuble)
