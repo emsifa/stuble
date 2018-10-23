@@ -2,7 +2,7 @@ STUBLE
 ========================================
 
 Stuble is command line tool built with PHP to simplify working with stubs.
-Stuble will collect parameters in your stub(s) file(s) and ask you that parameters.
+Stuble will collect parameters in your stub(s) file(s) and ask you those parameters.
 So you don't need to write scripts to handle each stub file.
 
 ![Stuble](https://raw.githubusercontent.com/emsifa/stuble/edb6fe4fb0c6c7d9f938bdee721ab83ca69f2644/stuble.png)
