@@ -59,17 +59,45 @@ class {? entity.pascal ?} extends Model
 
 #### Generate File From Stub
 
-In that directory (in this example `/home/me/coding/try-stuble`), run command below:
+Back to cmd/terminal and run command below:
 
 ```
 stuble make model
 ```
 
-Then stuble will scan needed parameters in our `stubs/model.stub`,
-ask values for that parameters,
-then ask again where to put result file.
+Then stuble will scan needed parameters in our `stubs/model.stub` 
+(in this example `model_namespace`, and `entity`),
+then ask values for those parameters,
+finally stuble will ask where do you want to save the file.
 
-Try example above, look at the result. You would realize things like:
+For example if you fill:
+
+* model_namespace = App\Models
+* entity = product category
+* path = app/Models/ProductCategory.php
+
+Stuble will generate `app/Models/ProductCategory.php` with content:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Model product category
+ */
+class ProductCategory extends Model
+{
+
+    protected $table = "product_categories";
+
+}
+
+```
+
+If you look at your `model.stub` again, you may realize things like:
 
 * First word wrapped by `{?...?}` is a parameter that stuble would ask.
 * Words wrapped by `["..."]` like `App\Models` is parameter default value.
