@@ -67,7 +67,7 @@ abstract class Command extends SymfonyCommand
 
         $this->registerOutputStyles();
 
-        $this->handle();
+        return $this->handle() ?: SymfonyCommand::SUCCESS;
     }
 
     protected function handle()
