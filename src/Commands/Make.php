@@ -5,8 +5,6 @@ namespace Emsifa\Stuble\Commands;
 use Emsifa\Stuble\Stuble;
 use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -288,13 +286,27 @@ class Make extends StubleCommand
 
     protected function createDirectoryIfNotExists($dir)
     {
+        list($drive, $dir) = $this->splitDriveWithPath($dir);
         $paths = explode("/", $dir);
         $path = "";
         while (count($paths)) {
             $path .= "/" . array_shift($paths);
-            if (!is_dir($path)) {
-                mkdir($path);
+
+            if (!is_dir($drive . $path)) {
+                mkdir($drive . $path);
             }
         }
+    }
+
+    /**
+     * Split drive and path from windows filesystem
+     */
+    protected function splitDriveWithPath($path)
+    {
+        $splitted = explode(":", $path, 2);
+
+        return count($splitted) > 1
+            ? [$splitted[0].":", str_replace("\\", "/", $splitted[1])]
+            : [null, str_replace("\\", "/", $splitted[0])];
     }
 }
