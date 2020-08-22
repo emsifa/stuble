@@ -9,14 +9,14 @@ So you don't need to write scripts to handle each stub file.
 
 ## REQUIREMENTS
 
-* PHP >= 7.1
+* PHP >= 7.2.16
 * Composer
 
 ## INSTALLATION
 
 
 ```
-composer global require emsifa/stuble:dev-master
+composer global require emsifa/stuble
 ```
 
 > Make sure you have register composer bin directory to your PATH variable. You can [read this](https://getcomposer.org/doc/03-cli.md#global) for more information.
@@ -65,7 +65,7 @@ Back to cmd/terminal and run command below:
 stuble make model
 ```
 
-Then stuble will scan needed parameters in our `stubs/model.stub` 
+Then stuble will scan needed parameters in our `stubs/model.stub`
 (in this example `model_namespace`, and `entity`),
 then ask values for those parameters,
 finally stuble will ask where do you want to save the file.
