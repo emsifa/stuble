@@ -49,6 +49,8 @@ class Make extends StubleCommand
             $this->error("Stub file '{$query}.stub' not found.");
         }
 
+        $stubsFiles = $this->filterDuplicates($stubsFiles);
+
         if ($excludes) {
             $stubsFiles = $this->excludeFiles($stubsFiles, $excludes, "/stubs/{$query}");
         }
@@ -308,5 +310,18 @@ class Make extends StubleCommand
         return count($splitted) > 1
             ? [$splitted[0].":", str_replace("\\", "/", $splitted[1])]
             : [null, str_replace("\\", "/", $splitted[0])];
+    }
+
+    /**
+     * Remove same source_path from stubs files
+     */
+    public function filterDuplicates(array $stubsFiles)
+    {
+        return array_values(array_reduce($stubsFiles, function($result, $stubFile) {
+            if (!isset($result[$stubFile['source_path']])) {
+                $result[$stubFile['source_path']] = $stubFile;
+            }
+            return $result;
+        }, []));
     }
 }
