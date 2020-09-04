@@ -2,6 +2,7 @@
 
 namespace Emsifa\Stuble\Commands;
 
+use Emsifa\Stuble\Helper;
 use Emsifa\Stuble\Stuble;
 use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
@@ -206,7 +207,7 @@ class Make extends StubleCommand
 
     protected function save(string $dest, string $content)
     {
-        $this->createDirectoryIfNotExists(dirname($dest));
+        Helper::createDirectoryIfNotExists(dirname($dest));
         file_put_contents($dest, $content);
     }
 
@@ -217,7 +218,7 @@ class Make extends StubleCommand
         $before = $appendOption['before'];
         $line = $appendOption['line'];
 
-        $this->createDirectoryIfNotExists(dirname($dest));
+        Helper::createDirectoryIfNotExists(dirname($dest));
 
         if ($before) {
             return $this->appendBefore($dest, $text, $before);
@@ -284,32 +285,6 @@ class Make extends StubleCommand
         }
 
         return 0;
-    }
-
-    protected function createDirectoryIfNotExists($dir)
-    {
-        list($drive, $dir) = $this->splitDriveWithPath($dir);
-        $paths = explode("/", $dir);
-        $path = "";
-        while (count($paths)) {
-            $path .= "/" . array_shift($paths);
-
-            if (!is_dir($drive . $path)) {
-                mkdir($drive . $path);
-            }
-        }
-    }
-
-    /**
-     * Split drive and path from windows filesystem
-     */
-    protected function splitDriveWithPath($path)
-    {
-        $splitted = explode(":", $path, 2);
-
-        return count($splitted) > 1
-            ? [$splitted[0].":", str_replace("\\", "/", $splitted[1])]
-            : [null, str_replace("\\", "/", $splitted[0])];
     }
 
     /**
