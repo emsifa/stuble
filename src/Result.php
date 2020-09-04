@@ -75,18 +75,44 @@ class Result
     protected function parseContent(string $content)
     {
         $options = [];
-        $regexOptions = "/^===\n\r?(?<options>(.*\n\r?)*)===\n\r?/";
-        if (preg_match($regexOptions, $content, $match)) {
-            $content = preg_replace($regexOptions, "", $content);
-            $options = $match['options'];
-            try {
-                $options = Toml::parse($options);
-            } catch (\Exception $e) {
-                $options = Yaml::parse($options);
+        [$content, $options] = $this->splitOptionsFromContent($content);
+
+        $options = $options ? $this->parseOptions($options) : [];
+
+        return [$content, $options];
+    }
+
+    protected function splitOptionsFromContent(string $content)
+    {
+        $lines = explode("\n", $content);
+        if (isset($lines[0]) && trim($lines[0]) !== "===") {
+            return [$content, ""];
+        }
+
+        $optionsLines = [];
+        $wrapper = 0;
+        while ($line = array_shift($lines)) {
+            if (trim($line) === "===") {
+                $wrapper++;
+            } else {
+                $optionsLines[] = $line;
+            }
+
+            if ($wrapper === 2) {
+                return [implode("\n", $lines), implode("\n", $optionsLines)];
             }
         }
 
-        return [$content, $options];
+        return [$content, ""];
+    }
+
+    protected function parseOptions(string $options)
+    {
+        try {
+            return Toml::parse($options);
+        } catch(\Exception $e) {
+            return Yaml::parse($options);
+        }
     }
 
 }

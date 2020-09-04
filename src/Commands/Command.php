@@ -24,7 +24,14 @@ abstract class Command extends SymfonyCommand
     protected $help = '';
     protected $description = '';
 
+    /**
+     * @var InputInterface
+     */
     protected $input;
+
+    /**
+     * @var OutputInterface
+     */
     protected $output;
 
     protected function configure()
