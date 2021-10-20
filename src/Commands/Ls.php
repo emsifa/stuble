@@ -9,7 +9,6 @@ use Emsifa\Stuble\Stuble;
 
 class Ls extends StubleCommand
 {
-
     protected $name = 'ls';
     protected $description = 'Show list available stubs.';
     protected $help = '';

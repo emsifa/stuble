@@ -11,7 +11,6 @@ use Symfony\Component\Console\Input\InputOption;
 
 class Make extends StubleCommand
 {
-
     protected $name = 'make';
     protected $description = 'Generate file by given stub file/directory.';
     protected $help = '';
@@ -115,7 +114,7 @@ class Make extends StubleCommand
 
     protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath)
     {
-        $excludes = array_map(function($pattern) {
+        $excludes = array_map(function ($pattern) {
             $pattern = trim($pattern);
             $hasAsterisk = strpos($pattern, '*');
             if (!$hasAsterisk) {
@@ -146,7 +145,7 @@ class Make extends StubleCommand
             foreach ($excludes as $pattern) {
                 if ($pattern['type'] == 'exact' && $filepath == $pattern['pattern']) {
                     return false;
-                } elseif($pattern['type'] == 'regex' && preg_match($pattern['pattern'], $filepath)) {
+                } elseif ($pattern['type'] == 'regex' && preg_match($pattern['pattern'], $filepath)) {
                     return false;
                 }
             }
@@ -236,9 +235,9 @@ class Make extends StubleCommand
 
         if ($before) {
             return $this->appendBefore($dest, $text, $before);
-        } elseif($after) {
+        } elseif ($after) {
             return $this->appendAfter($dest, $text, $after);
-        } elseif($line) {
+        } elseif ($line) {
             return $this->appendToLine($dest, $text, $line);
         } else {
             return file_put_contents($dest, "\n".$text, FILE_APPEND);
@@ -306,7 +305,7 @@ class Make extends StubleCommand
      */
     public function filterDuplicates(array $stubsFiles)
     {
-        return array_values(array_reduce($stubsFiles, function($result, $stubFile) {
+        return array_values(array_reduce($stubsFiles, function ($result, $stubFile) {
             if (!isset($result[$stubFile['source_path']])) {
                 $result[$stubFile['source_path']] = $stubFile;
             }

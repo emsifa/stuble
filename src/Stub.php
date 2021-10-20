@@ -6,7 +6,6 @@ use Closure;
 
 class Stub
 {
-
     use Concerns\FilterUtils;
     use Concerns\HelperUtils;
 
@@ -35,7 +34,7 @@ class Stub
         return $this->filepath;
     }
 
-    public function getParams() : array
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -66,7 +65,7 @@ class Stub
         $this->params = $this->fillValues($this->params, $values);
     }
 
-    public function render(array $values = []) : Result
+    public function render(array $values = []): Result
     {
         $this->setParamsValues($values);
 
@@ -79,7 +78,9 @@ class Stub
 
         $stub = $this->stub;
         foreach ($params as $param) {
-            if ($param['type'] == 'arg') continue;
+            if ($param['type'] == 'arg') {
+                continue;
+            }
 
             if ($param['type'] == Parser::TYPE_HELPER) {
                 $value = $this->applyHelper($param['key'], $this->resolveArgs($param['args'], $paramsValues));
@@ -108,7 +109,7 @@ class Stub
         return $params;
     }
 
-    protected function parseParams(string $stub) : array
+    protected function parseParams(string $stub): array
     {
         $params = Parser::parse($stub);
 
@@ -163,5 +164,4 @@ class Stub
         }
         return $results;
     }
-
 }

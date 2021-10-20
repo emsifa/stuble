@@ -6,8 +6,8 @@ class Stuble
 {
     use Concerns\StublePathUtils;
 
-    const KEY_ENV_PATH = 'STUBLE_HOME';
-    const KEY_WORKING_PATH = '.';
+    public const KEY_ENV_PATH = 'STUBLE_HOME';
+    public const KEY_WORKING_PATH = '.';
 
     protected $paths = [];
 
@@ -18,7 +18,7 @@ class Stuble
         $this->registerDefaultPaths();
     }
 
-    private function registerDefaultPaths() : void
+    private function registerDefaultPaths(): void
     {
         $this->setPath(static::KEY_WORKING_PATH, realpath('.'), 999);
         if ($envPath = getenv(static::KEY_ENV_PATH)) {
@@ -235,7 +235,4 @@ class Stuble
             'source_path' => str_replace($path, '', $filepath)
         ];
     }
-
-
-
 }

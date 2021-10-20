@@ -4,13 +4,12 @@ namespace Emsifa\Stuble\Concerns;
 
 trait StublePathUtils
 {
-
     public function hasPath(string $key): bool
     {
         return array_key_exists($key, $this->paths);
     }
 
-    public function getPath(string $key): ? string
+    public function getPath(string $key): ?string
     {
         return $this->hasPath($key) ? $this->paths[$key]['path'] : null;
     }
@@ -37,5 +36,4 @@ trait StublePathUtils
 
         return array_keys($paths);
     }
-
 }

@@ -12,7 +12,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Stublify extends StubleCommand
 {
-
     protected $name = 'stublify';
     protected $description = 'Transform file(s) into stub(s).';
     protected $help = '';
@@ -90,7 +89,9 @@ class Stublify extends StubleCommand
         while (true) {
             $this->nl();
             $text = $this->askTextToReplace();
-            if (!$text) break;
+            if (!$text) {
+                break;
+            }
 
             $files = $this->findFilesContains($text, $tempFiles);
             if (count($files)) {
@@ -180,7 +181,7 @@ class Stublify extends StubleCommand
 
     protected function findOtherFormats(array $tempFiles, $text, $parameter, $excepts = [])
     {
-        $filters = new Filters;
+        $filters = new Filters();
         $usedFilters = $parameter['filters'] ?: [];
         $availableFilters = [
             'singular',
@@ -384,7 +385,7 @@ class Stublify extends StubleCommand
     {
         if (is_file($fileOrDir)) {
             unlink($fileOrDir);
-        } elseif(is_dir($fileOrDir)) {
+        } elseif (is_dir($fileOrDir)) {
             $files = array_diff(scandir($fileOrDir), ['.', '..']);
             foreach ($files as $file) {
                 $this->removeFileOrDirectory($fileOrDir.'/'.$file);
@@ -409,5 +410,4 @@ class Stublify extends StubleCommand
     {
         // $this->cleanup();
     }
-
 }

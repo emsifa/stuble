@@ -7,7 +7,6 @@ use Closure;
 
 trait HelperUtils
 {
-
     protected static $hasInitializeGlobalHelpers = false;
     protected static $globalHelpers = [];
     protected $helpers = [];
@@ -79,5 +78,4 @@ trait HelperUtils
 
         return call_user_func_array($helper, $args);
     }
-
 }

@@ -12,7 +12,6 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class Get extends StubleCommand
 {
-
     protected $name = 'get';
     protected $description = 'Download stub files from github';
     protected $help = '';
@@ -160,7 +159,7 @@ class Get extends StubleCommand
         try {
             $response = $this->getHttpClient()->head($url);
             return $response->getStatusCode() === 200;
-        } catch(RequestException $e) {
+        } catch (RequestException $e) {
             return false;
         }
     }

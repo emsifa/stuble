@@ -4,25 +4,25 @@ namespace Emsifa\Stuble;
 
 class Parser
 {
-    const TYPE_PARAM            = 100;
-    const TYPE_HELPER           = 101;
+    public const TYPE_PARAM            = 100;
+    public const TYPE_HELPER           = 101;
 
-    const CONTENT               = 0;
-    const OPEN_TAG              = 1;
-    const CLOSING_TAG           = 2;
-    const CLOSE_TAG             = 3;
-    const PARAM_KEY             = 4;
-    const OPEN_DEFAULT_VALUE    = 5;
-    const DEFAULT_VALUE         = 6;
-    const CLOSE_DEFAULT_VALUE   = 7;
-    const FILTER_KEY            = 8;
-    const OPEN_FILTER_PARAMS    = 9;
-    const PARAM_VALUE           = 10;
-    const PARAM_STR             = 11;
-    const CLOSING_PARAM         = 12;
-    const PARAM_VAR             = 13;
-    const PARAM_NUM             = 14;
-    const CLOSE_FILTER_PARAMS   = 15;
+    public const CONTENT               = 0;
+    public const OPEN_TAG              = 1;
+    public const CLOSING_TAG           = 2;
+    public const CLOSE_TAG             = 3;
+    public const PARAM_KEY             = 4;
+    public const OPEN_DEFAULT_VALUE    = 5;
+    public const DEFAULT_VALUE         = 6;
+    public const CLOSE_DEFAULT_VALUE   = 7;
+    public const FILTER_KEY            = 8;
+    public const OPEN_FILTER_PARAMS    = 9;
+    public const PARAM_VALUE           = 10;
+    public const PARAM_STR             = 11;
+    public const CLOSING_PARAM         = 12;
+    public const PARAM_VAR             = 13;
+    public const PARAM_NUM             = 14;
+    public const CLOSE_FILTER_PARAMS   = 15;
 
     public static function parse(string $str)
     {
@@ -144,7 +144,7 @@ class Parser
                         $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_HELPER, $tok];
                         $states[] = static::OPEN_FILTER_PARAMS;
                         $tok = "";
-                    } elseif(static::isWhitespace($char)) {
+                    } elseif (static::isWhitespace($char)) {
                         $tags[$n]['tokens'][] = [static::PARAM_KEY, static::TYPE_PARAM, $tok];
                         $states[] = static::CLOSING_TAG;
                     } elseif ($char == ".") {
@@ -319,7 +319,7 @@ class Parser
                     if ($char == ".") {
                         $states[] = static::FILTER_KEY;
                         $tok = "";
-                    } elseif(static::isWhitespace($char)) {
+                    } elseif (static::isWhitespace($char)) {
                         $states[] = static::CLOSING_TAG;
                     }
 
@@ -338,27 +338,29 @@ class Parser
 
                     break;
             }
-
         }
 
         array_pop($tags);
         return $tags;
     }
 
-    protected static function strIs(string $str, string $rg) {
+    protected static function strIs(string $str, string $rg)
+    {
         return (bool) preg_match($rg, $str);
     }
 
-    protected static function isWhitespace(string $str) {
+    protected static function isWhitespace(string $str)
+    {
         return (bool) static::strIs($str, "/\s+/");
     }
 
-    protected static function strStart(string $str, string $start) {
+    protected static function strStart(string $str, string $start)
+    {
         return strpos($str, $start) === 0;
     }
 
-    protected static function endsWith(string $str, string $start) {
+    protected static function endsWith(string $str, string $start)
+    {
         return strpos($str, $start) === strlen($str) - strlen($start);
     }
-
 }

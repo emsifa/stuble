@@ -7,7 +7,6 @@ use Closure;
 
 trait FilterUtils
 {
-
     protected static $hasInitializeGlobalFilters = false;
     protected static $globalFilters = [];
     protected $filters = [];
@@ -77,5 +76,4 @@ trait FilterUtils
 
         return call_user_func_array($filter, array_merge([$value], $args));
     }
-
 }

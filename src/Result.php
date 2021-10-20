@@ -8,7 +8,6 @@ use Yosymfony\Toml\TomlBuilder;
 
 class Result
 {
-
     protected $rawContent;
     protected $content;
 
@@ -110,9 +109,8 @@ class Result
     {
         try {
             return Toml::parse($options);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return Yaml::parse($options);
         }
     }
-
 }

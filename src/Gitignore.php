@@ -4,7 +4,6 @@ namespace Emsifa\Stuble;
 
 class Gitignore
 {
-
     protected $gitignoreFile;
     protected $patterns = [];
 
@@ -92,5 +91,4 @@ class Gitignore
             'is_dir' => !$hasAsterisk ? is_dir($path) : false,
         ];
     }
-
 }

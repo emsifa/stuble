@@ -17,7 +17,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 
 abstract class Command extends SymfonyCommand
 {
-
     protected $name = '';
     protected $args = [];
     protected $options = [];
@@ -79,7 +78,6 @@ abstract class Command extends SymfonyCommand
 
     protected function handle()
     {
-
     }
 
     protected function argument(string $key)
@@ -180,7 +178,7 @@ abstract class Command extends SymfonyCommand
 
     protected function dump()
     {
-        foreach(func_get_args() as $arg) {
+        foreach (func_get_args() as $arg) {
             var_dump($arg);
         }
         exit;
@@ -190,6 +188,4 @@ abstract class Command extends SymfonyCommand
     {
         $this->writeln('');
     }
-
-
 }
