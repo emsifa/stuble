@@ -21,7 +21,7 @@ if (!class_exists(Stuble::class)) {
     exit;
 }
 
-$app = new Application('stuble', 'v0.3.0');
+$app = new Application('stuble', 'v0.4.0');
 
 $app->add(new Make());
 $app->add(new Ls());
