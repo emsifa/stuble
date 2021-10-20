@@ -73,7 +73,7 @@ class Stub
         $paramsValues = $this->getParamsValues();
 
         usort($params, function ($a, $b) {
-            return strlen($a['code']) < strlen($b['code']);
+            return strlen($a['code']) - strlen($b['code']);
         });
 
         $stub = $this->stub;

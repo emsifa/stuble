@@ -6,6 +6,7 @@ use Emsifa\Stuble\Helper;
 use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
 use InvalidArgumentException;
+use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -38,7 +39,17 @@ class Make extends StubleCommand
             'alias' => 'e',
             'type' => InputOption::VALUE_OPTIONAL,
             'description' => 'Exclude some files.'
-        ]
+        ],
+        'skip-exists' => [
+            'alias' => 'S',
+            'type' => InputOption::VALUE_NONE,
+            'description' => 'Skip (not overwrite) existing files without asking.',
+        ],
+        'overwrite' => [
+            'alias' => 'F',
+            'type' => InputOption::VALUE_NONE,
+            'description' => 'Overwrite existing files without asking.',
+        ],
     ];
 
     protected function handle()
@@ -47,6 +58,12 @@ class Make extends StubleCommand
         $parameters = $this->argument('parameters');
         $subdir = !$this->option('no-subdir');
         $excludes = $this->option('excludes');
+        $skipExists = $this->option('skip-exists');
+        $overwrite = $this->option('overwrite');
+
+        if ($skipExists && $overwrite) {
+            throw new InvalidOptionException("Cannot enable skip-exists and overwrite options at the same time.");
+        }
 
         $parameters = $this->resolveParameters($parameters);
 
@@ -102,7 +119,7 @@ class Make extends StubleCommand
             $this->info("# SAVING FILES");
             foreach ($stubs as $stub) {
                 $result = $stub->render($paramsValues);
-                $this->askToSave($result, $stub);
+                $this->askToSave($result, $stub, $skipExists, $overwrite);
             }
         } else {
             foreach ($stubs as $stub) {
@@ -153,7 +170,7 @@ class Make extends StubleCommand
         });
     }
 
-    protected function askToSave(Result $result, Stub $stuble)
+    protected function askToSave(Result $result, Stub $stuble, ?bool $skipExists, ?bool $overwrite)
     {
         $filename = $stuble->filename;
         $content = (string)$result;
@@ -170,13 +187,22 @@ class Make extends StubleCommand
             }
 
             $dest = $this->getWorkingPath() . '/' . $savePath;
+            $fileExists = is_file($dest);
 
-            if (is_file($dest) && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
+            if ($fileExists && $skipExists) {
+                $this->info("[skipped] {$savePath}");
                 return;
             }
 
+            if ($fileExists && !$overwrite && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
+                $this->info("[skipped] {$savePath}");
+                return;
+            }
+
+            $action = $fileExists ? "overwritten" : "created";
+
             $this->save($dest, $content);
-            $this->text("+ File '{$savePath}' saved!");
+            $this->info("[{$action}] {$savePath}");
         }
     }
 
