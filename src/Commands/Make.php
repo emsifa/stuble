@@ -3,9 +3,9 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Helper;
-use Emsifa\Stuble\Stuble;
 use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -20,7 +20,11 @@ class Make extends StubleCommand
         'stub' => [
             'type' => InputArgument::REQUIRED,
             'description' => 'Stub file/directory.'
-        ]
+        ],
+        'parameters' => [
+            'type' => InputArgument::IS_ARRAY,
+            'description' => 'Parameter values',
+        ],
     ];
 
     protected $options = [
@@ -41,8 +45,11 @@ class Make extends StubleCommand
     protected function handle()
     {
         $query = $this->argument('stub');
+        $parameters = $this->argument('parameters');
         $subdir = !$this->option('no-subdir');
         $excludes = $this->option('excludes');
+
+        $parameters = $this->resolveParameters($parameters);
 
         $stubsFiles = $this->stuble->findStubsFiles($query, $subdir);
 
@@ -80,7 +87,14 @@ class Make extends StubleCommand
         }, $stubsFiles);
 
         $this->info("# FILL PARAMETERS");
-        $paramsValues = $this->askParams($stubs);
+        $stubsParameters = $this->collectParams($stubs);
+
+        $paramsValues = $parameters;
+        if (count($parameters) > 0) {
+            $this->validateParameters($parameters, $stubsParameters);
+        } else {
+            $paramsValues = $this->askParams($stubs);
+        }
 
         $dump = $this->option('dump');
 
@@ -298,5 +312,50 @@ class Make extends StubleCommand
             }
             return $result;
         }, []));
+    }
+
+    protected function resolveParameters(array $parameters)
+    {
+        $values = [];
+        foreach ($parameters as $param) {
+            [$key, $value] = $this->extractParameter($param);
+            $values[$key] = $value;
+        }
+        return $values;
+    }
+
+    protected function extractParameter(string $param)
+    {
+        $split = explode(":", $param, 2);
+
+        if (count($split) == 1) {
+            throw new InvalidArgumentException("Invalid parameter format. Parameter should be written like \"key:value\"");
+        }
+
+        return $split;
+    }
+
+    protected function validateParameters(array $inputParameters, array $stubsParameters)
+    {
+        $inputKeys = array_keys($inputParameters);
+        $stubsKeys = array_keys($stubsParameters);
+
+        $unusedParameters = array_diff($inputKeys, $stubsKeys);
+        if ($unusedParameters) {
+            throw new InvalidArgumentException("Unused parameter: " . implode(", ", $unusedParameters));
+        }
+
+
+        $requiredKeys = [];
+        foreach ($stubsParameters as $k => $v) {
+            if (!$v) {
+                $requiredKeys[] = $k;
+            }
+        }
+
+        $missingParameters = array_diff($requiredKeys, $inputKeys);
+        if ($missingParameters) {
+            throw new InvalidArgumentException("Missing parameter: ". implode(", ", $missingParameters));
+        }
     }
 }
