@@ -2,10 +2,21 @@
 
 namespace Emsifa\Stuble;
 
-use Doctrine\Common\Inflector\Inflector;
+use Doctrine\Inflector\Inflector;
+use Doctrine\Inflector\InflectorFactory;
 
 class Filters
 {
+    protected static ?Inflector $inflector = null;
+
+    protected static function inflector(): Inflector
+    {
+        if (! static::$inflector) {
+            static::$inflector = InflectorFactory::create()->build();
+        }
+        return static::$inflector;
+    }
+
     public static function replace(string $str, $from, $to): string
     {
         return str_replace($from, $to, $str);
@@ -13,12 +24,12 @@ class Filters
 
     public static function singular(string $str): string
     {
-        return Inflector::singularize($str);
+        return static::inflector()->singularize($str);
     }
 
     public static function plural(string $str): string
     {
-        return Inflector::pluralize($str);
+        return static::inflector()->pluralize($str);
     }
 
     public static function kebab(string $str): string
