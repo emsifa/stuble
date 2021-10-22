@@ -226,7 +226,7 @@ class Make extends StubleCommand
     {
         $relativePath = str_replace($this->getWorkingPath(), "", $file);
         $this->save($file, $content);
-        $this->writeln("<bg=magenta;fg=black;> create </> {$relativePath}");
+        $this->writeln("<bg=magenta;fg=black;> overwrite </> {$relativePath}");
     }
 
     protected function dumpResult(Result $result, Stub $stuble)
