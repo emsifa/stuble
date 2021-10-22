@@ -190,19 +190,21 @@ class Make extends StubleCommand
             $fileExists = is_file($dest);
 
             if ($fileExists && $skipExists) {
-                $this->info("[skipped] {$savePath}");
+                $this->muted("[skipped] {$savePath}");
                 return;
             }
 
             if ($fileExists && !$overwrite && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
-                $this->info("[skipped] {$savePath}");
+                $this->muted("[skipped] {$savePath}");
                 return;
             }
 
-            $action = $fileExists ? "overwritten" : "created";
-
             $this->save($dest, $content);
-            $this->info("[{$action}] {$savePath}");
+            if ($fileExists) {
+                $this->warning("[overwritten] {$savePath}");
+            } else {
+                $this->success("[created] {$savePath}");
+            }
         }
     }
 
