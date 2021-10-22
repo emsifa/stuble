@@ -3,3 +3,5 @@ composer.lock
 stubs/
 
 .php-cs-fixer.cache
+
+.samples
