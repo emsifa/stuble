@@ -217,16 +217,21 @@ class Make extends StubleCommand
 
     protected function create(string $file, string $content)
     {
-        $relativePath = str_replace($this->getWorkingPath(), "", $file);
+        $relativePath = $this->toRelativePath($file);
         $this->save($file, $content);
         $this->writeln("<bg=green;fg=black;> create </> {$relativePath}");
     }
 
     protected function overwrite(string $file, string $content)
     {
-        $relativePath = str_replace($this->getWorkingPath(), "", $file);
+        $relativePath = $this->toRelativePath($file);
         $this->save($file, $content);
         $this->writeln("<bg=magenta;fg=black;> overwrite </> {$relativePath}");
+    }
+
+    protected function toRelativePath($dest)
+    {
+        return ltrim(str_replace($this->getWorkingPath(), "", $dest), "/");
     }
 
     protected function dumpResult(Result $result, Stub $stuble)
