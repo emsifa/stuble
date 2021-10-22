@@ -50,6 +50,11 @@ class Make extends StubleCommand
             'type' => InputOption::VALUE_NONE,
             'description' => 'Overwrite existing files without asking.',
         ],
+        'show-stubs' => [
+            'alias' => 'L',
+            'type' => InputOption::VALUE_NONE,
+            'description' => 'Show list of stub files being generated.'
+        ]
     ];
 
     protected function handle()
@@ -60,6 +65,7 @@ class Make extends StubleCommand
         $excludes = $this->option('excludes');
         $skipExists = $this->option('skip-exists');
         $overwrite = $this->option('overwrite');
+        $showStubs = $this->option('show-stubs');
 
         if ($skipExists && $overwrite) {
             throw new InvalidOptionException("Cannot enable skip-exists and overwrite options at the same time.");
@@ -79,7 +85,9 @@ class Make extends StubleCommand
             $stubsFiles = $this->excludeFiles($stubsFiles, $excludes, "/stubs/{$query}");
         }
 
-        $this->displayStubsFiles($stubsFiles);
+        if ($showStubs) {
+            $this->displayStubsFiles($stubsFiles);
+        }
 
         $stubs = array_map(function ($file) {
             $sourcePath = ltrim($file['source_path'], '/');
