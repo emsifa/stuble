@@ -50,6 +50,11 @@ class Make extends StubleCommand
             'type' => InputOption::VALUE_NONE,
             'description' => 'Overwrite existing files without asking.',
         ],
+        'show-stubs' => [
+            'alias' => 'L',
+            'type' => InputOption::VALUE_NONE,
+            'description' => 'Show list of stub files being generated.'
+        ]
     ];
 
     protected function handle()
@@ -60,6 +65,7 @@ class Make extends StubleCommand
         $excludes = $this->option('excludes');
         $skipExists = $this->option('skip-exists');
         $overwrite = $this->option('overwrite');
+        $showStubs = $this->option('show-stubs');
 
         if ($skipExists && $overwrite) {
             throw new InvalidOptionException("Cannot enable skip-exists and overwrite options at the same time.");
@@ -79,21 +85,8 @@ class Make extends StubleCommand
             $stubsFiles = $this->excludeFiles($stubsFiles, $excludes, "/stubs/{$query}");
         }
 
-        if (count($stubsFiles) > 1) {
-            $this->info("# STUBS FILES");
-            foreach ($stubsFiles as $i => $file) {
-                $sourcePath = ltrim($file['source_path'], '/');
-                $sourceName = $file['source'];
-                $this->text("<fg=magenta>".($i + 1) . ")</> <fg=green>{$sourceName}</>/{$sourcePath}");
-            }
-            $this->nl();
-        } else {
-            $file = $stubsFiles[0];
-            $this->info("# STUB FILE");
-            $sourcePath = ltrim($file['source_path'], '/');
-            $sourceName = $file['source'];
-            $this->writeln("<fg=green>{$sourceName}</>:{$sourcePath}");
-            $this->nl();
+        if ($showStubs) {
+            $this->displayStubsFiles($stubsFiles);
         }
 
         $stubs = array_map(function ($file) {
@@ -102,7 +95,6 @@ class Make extends StubleCommand
             return $this->stuble->makeStub($sourceName.':'.$sourcePath);
         }, $stubsFiles);
 
-        $this->info("# FILL PARAMETERS");
         $stubsParameters = $this->collectParams($stubs);
 
         $paramsValues = $parameters;
@@ -115,11 +107,9 @@ class Make extends StubleCommand
         $dump = $this->option('dump');
 
         if (!$dump) {
-            $this->nl();
-            $this->info("# SAVING FILES");
             foreach ($stubs as $stub) {
                 $result = $stub->render($paramsValues);
-                $this->askToSave($result, $stub, $skipExists, $overwrite);
+                $this->processFile($result, $stub, $skipExists, $overwrite);
             }
         } else {
             foreach ($stubs as $stub) {
@@ -127,6 +117,19 @@ class Make extends StubleCommand
                 $this->dumpResult($result, $stub);
             }
         }
+    }
+
+    protected function displayStubsFiles(array $stubsFiles)
+    {
+        $digitsCount = strlen((string) count($stubsFiles));
+
+        $this->writeln(str_repeat(" ", $digitsCount + 2)." <fg=blue;options=bold>STUBS</> ");
+        foreach ($stubsFiles as $i => $file) {
+            $sourcePath = ltrim($file['source_path'], '/');
+            $sourceName = $file['source'];
+            $this->text("<fg=blue;options=bold> " . str_pad($i + 1, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$sourceName}</>/{$sourcePath}");
+        }
+        $this->nl();
     }
 
     protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath)
@@ -170,40 +173,60 @@ class Make extends StubleCommand
         });
     }
 
-    protected function askToSave(Result $result, Stub $stuble, ?bool $skipExists, ?bool $overwrite)
+    protected function processFile(Result $result, Stub $stuble, ?bool $skipExists, ?bool $overwrite)
     {
         $filename = $stuble->filename;
-        $content = (string)$result;
+        $content = (string) $result;
         $savePath = $result->getSavePath();
         $append = $result->getAppendOption();
 
         if ($append) {
             $dest = $this->getWorkingPath().'/'.$append['file'];
-            $this->append($content, $append);
-            $this->text("+ File '{$append['file']}' appended!");
-        } else {
-            if (!$savePath) {
-                $savePath = $this->ask("Set {$filename} save path:");
-            }
-
-            $dest = $this->getWorkingPath() . '/' . $savePath;
-            $fileExists = is_file($dest);
-
-            if ($fileExists && $skipExists) {
-                $this->info("[skipped] {$savePath}");
-                return;
-            }
-
-            if ($fileExists && !$overwrite && !$this->confirm("File '{$savePath}' already exists. Do you want to overwrite it?")) {
-                $this->info("[skipped] {$savePath}");
-                return;
-            }
-
-            $action = $fileExists ? "overwritten" : "created";
-
-            $this->save($dest, $content);
-            $this->info("[{$action}] {$savePath}");
+            return $this->append($content, $append);
         }
+
+        if (!$savePath) {
+            $savePath = $this->ask("Set {$filename} save path:");
+        }
+
+        $dest = $this->getWorkingPath() . '/' . $savePath;
+        $fileExists = is_file($dest);
+
+        if ($fileExists && $skipExists) {
+            return $this->skip($savePath);
+        }
+
+        if ($fileExists && !$overwrite && !$this->confirmOverwrite($savePath)) {
+            return $this->skip($savePath);
+        }
+
+        return $fileExists
+            ? $this->overwrite($dest, $content)
+            : $this->create($dest, $content);
+    }
+
+    protected function confirmOverwrite(string $savePath)
+    {
+        return $this->confirm("<bg=yellow;fg=black> ? </> File '{$savePath}' already exists. Do you want to overwrite it? <fg=magenta>[y/N]</>");
+    }
+
+    protected function skip(string $file)
+    {
+        $this->writeln("<bg=gray;fg=black> skip </> {$file}");
+    }
+
+    protected function create(string $file, string $content)
+    {
+        $relativePath = str_replace($this->getWorkingPath(), "", $file);
+        $this->save($file, $content);
+        $this->writeln("<bg=green;fg=black;> create </> {$relativePath}");
+    }
+
+    protected function overwrite(string $file, string $content)
+    {
+        $relativePath = str_replace($this->getWorkingPath(), "", $file);
+        $this->save($file, $content);
+        $this->writeln("<bg=magenta;fg=black;> overwrite </> {$relativePath}");
     }
 
     protected function dumpResult(Result $result, Stub $stuble)
@@ -219,7 +242,7 @@ class Make extends StubleCommand
         $params = $this->collectParams($stubles);
 
         foreach ($params as $key => $value) {
-            $params[$key] = $this->ask("{$key}?", $value);
+            $params[$key] = $this->ask("<bg=yellow;fg=black> ? </> {$key}:", $value);
         }
 
         return $params;
@@ -260,14 +283,16 @@ class Make extends StubleCommand
         Helper::createDirectoryIfNotExists(dirname($dest));
 
         if ($before) {
-            return $this->appendBefore($dest, $text, $before);
+            $this->appendBefore($dest, $text, $before);
         } elseif ($after) {
-            return $this->appendAfter($dest, $text, $after);
+            $this->appendAfter($dest, $text, $after);
         } elseif ($line) {
-            return $this->appendToLine($dest, $text, $line);
+            $this->appendToLine($dest, $text, $line);
         } else {
-            return file_put_contents($dest, "\n".$text, FILE_APPEND);
+            file_put_contents($dest, "\n".$text, FILE_APPEND);
         }
+
+        $this->text("<bg=cyan;fg=black> append </> {$appendOption['file']}");
     }
 
     protected function appendBefore($dest, $text, $keyword)

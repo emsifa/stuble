@@ -129,6 +129,11 @@ abstract class Command extends SymfonyCommand
         return $this->writeln($text);
     }
 
+    protected function muted(string $text, array $options = [])
+    {
+        return $this->writeln($text, 'fg=#888888', $options);
+    }
+
     protected function info(string $text, array $options = [])
     {
         return $this->writeln($text, 'info', $options);
