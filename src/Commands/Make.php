@@ -32,6 +32,10 @@ class Make extends StubleCommand
             'alias' => 'd',
             'description' => 'Dump render results.'
         ],
+        'info' => [
+            'type' => InputOption::VALUE_NONE,
+            'description' => 'Show stub files and parameters needed from given stub file/directory.',
+        ],
         'no-subdir' => [
             'description' => 'Without subdirectories.'
         ],
@@ -66,6 +70,7 @@ class Make extends StubleCommand
         $skipExists = $this->option('skip-exists');
         $overwrite = $this->option('overwrite');
         $showStubs = $this->option('show-stubs');
+        $info = $this->option('info');
 
         if ($skipExists && $overwrite) {
             throw new InvalidOptionException("Cannot enable skip-exists and overwrite options at the same time.");
@@ -96,6 +101,12 @@ class Make extends StubleCommand
         }, $stubsFiles);
 
         $stubsParameters = $this->collectParams($stubs);
+
+        if ($info) {
+            $this->displayStubsFiles($stubsFiles);
+            $this->displayParameters($stubsParameters);
+            return;
+        }
 
         $paramsValues = $parameters;
         if (count($parameters) > 0) {
@@ -130,6 +141,17 @@ class Make extends StubleCommand
             $this->text("<fg=blue;options=bold> " . str_pad($i + 1, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$sourceName}</>/{$sourcePath}");
         }
         $this->nl();
+    }
+
+    protected function displayParameters(array $parameters)
+    {
+        $digitsCount = strlen((string) count($parameters));
+
+        $this->writeln(str_repeat(" ", $digitsCount + 2)." <fg=blue;options=bold>PARAMETERS</> ");
+        $i = 0;
+        foreach ($parameters as $key => $value) {
+            $this->text("<fg=blue;options=bold> " . str_pad(++$i, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$key}</>" . ($value ? ": {$value}" : ""));
+        }
     }
 
     protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath)
