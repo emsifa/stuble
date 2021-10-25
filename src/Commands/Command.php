@@ -14,11 +14,40 @@ use Symfony\Component\Console\Question\Question;
 
 abstract class Command extends SymfonyCommand
 {
-    protected $name = '';
-    protected $args = [];
-    protected $options = [];
-    protected $help = '';
-    protected $description = '';
+    /**
+     * Command name
+     *
+     * @var string
+     */
+    protected string $name = '';
+
+    /**
+     * Command arguments
+     *
+     * @var array
+     */
+    protected array $args = [];
+
+    /**
+     * Command options
+     *
+     * @var array
+     */
+    protected array $options = [];
+
+    /**
+     * Command help message
+     *
+     * @var string
+     */
+    protected string $help = '';
+
+    /**
+     * Command description
+     *
+     * @var string
+     */
+    protected string $description = '';
 
     /**
      * @var InputInterface
@@ -30,6 +59,9 @@ abstract class Command extends SymfonyCommand
      */
     protected $output;
 
+    /**
+     * @inheritdoc
+     */
     protected function configure()
     {
         $this->setName($this->name);
@@ -63,6 +95,9 @@ abstract class Command extends SymfonyCommand
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
@@ -73,21 +108,43 @@ abstract class Command extends SymfonyCommand
         return $this->handle() ?: SymfonyCommand::SUCCESS;
     }
 
+    /**
+     * Handle command execution
+     */
     protected function handle()
     {
     }
 
-    protected function argument(string $key)
+    /**
+     * Get command argument value
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    protected function argument(string $key): mixed
     {
         return $this->input->getArgument($key);
     }
 
-    protected function option(string $key)
+    /**
+     * Get command option value
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    protected function option(string $key): mixed
     {
         return $this->input->getOption($key);
     }
 
-    protected function ask(string $question, $default = null)
+    /**
+     * Ask user to answer a question
+     *
+     * @param  string $question
+     * @param  mixed $defualt
+     * @return mixed
+     */
+    protected function ask(string $question, $default = null): mixed
     {
         $helper = $this->getHelper('question');
         if ($default) {
@@ -98,7 +155,14 @@ abstract class Command extends SymfonyCommand
         return $helper->ask($this->input, $this->output, $question);
     }
 
-    protected function confirm(string $question, $default = false)
+    /**
+     * Ask user to confirm a question
+     *
+     * @param  string $question
+     * @param  mixed $default
+     * @return mixed
+     */
+    protected function confirm(string $question, $default = false): mixed
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion($question.' ', $default, '/^(y)/i');
@@ -106,64 +170,139 @@ abstract class Command extends SymfonyCommand
         return $helper->ask($this->input, $this->output, $question);
     }
 
-    protected function write(string $text, $style = null, array $options = [])
+    /**
+     * Write text to OutputInterface
+     *
+     * @param  string $text
+     * @param  string|null $style
+     * @param  array $options
+     * @return mixed
+     */
+    protected function write(string $text, ?string $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
 
         return $this->output->write($text);
     }
 
-    protected function writeln(string $text, $style = null, array $options = [])
+    /**
+     * Write text and ends it with new line "\n"
+     *
+     * @param  string $text
+     * @param  string|null $style
+     * @param  array $options
+     * @return mixed
+     */
+    protected function writeln(string $text, ?string $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
 
         return $this->output->writeln($text);
     }
 
-    protected function formatText(string $text, $style = null, array $options = [])
+    /**
+     * Add style to given text
+     *
+     * @param  string $text
+     * @param  string|null $style
+     * @param  array $options
+     * @return string
+     */
+    protected function formatText(string $text, ?string $style = null, array $options = []): string
     {
         return $style ? "<{$style}>{$text}</>" : $text;
     }
 
+    /**
+     * Write normal text without any style
+     *
+     * @param  string $text
+     * @return mixed
+     */
     protected function text(string $text)
     {
         return $this->writeln($text);
     }
 
+    /**
+     * Write gray text
+     *
+     * @param  string $text
+     * @param  array $options
+     * @return mixed
+     */
     protected function muted(string $text, array $options = [])
     {
-        return $this->writeln($text, 'fg=#888888', $options);
+        return $this->writeln($text, 'muted', $options);
     }
 
+    /**
+     * Write info text (blue)
+     *
+     * @param  string $text
+     * @param  array $options
+     * @return mixed
+     */
     protected function info(string $text, array $options = [])
     {
         return $this->writeln($text, 'info', $options);
     }
 
+    /**
+     * Write danger text (red)
+     *
+     * @param  string $text
+     * @param  array $options
+     * @return mixed
+     */
     protected function danger(string $text, array $options = [])
     {
         return $this->writeln($text, 'danger', $options);
     }
 
+    /**
+     * Write warning text (yellow)
+     *
+     * @param  string $text
+     * @param  array $options
+     * @return mixed
+     */
     protected function warning(string $text, array $options = [])
     {
         return $this->writeln($text, 'warning', $options);
     }
 
+    /**
+     * Write success text (green)
+     *
+     * @param  string $text
+     * @param  array $options
+     * @return mixed
+     */
     protected function success(string $text, array $options = [])
     {
         return $this->writeln($text, 'success', $options);
     }
 
+    /**
+     * Write error text and exit program
+     *
+     * @param  string $message
+     * @return mixed
+     */
     protected function error(string $message)
     {
         $this->writeln($message, 'error');
         exit;
     }
 
+    /**
+     * Register output styles
+     */
     protected function registerOutputStyles()
     {
         $styles = [
+            'muted' => ['fg' => 'gray'],
             'info' => ['fg' => 'blue'],
             'success' => ['fg' => 'green'],
             'warning' => ['fg' => 'yellow'],
@@ -182,6 +321,9 @@ abstract class Command extends SymfonyCommand
         }
     }
 
+    /**
+     * Dump argument values and exit program
+     */
     protected function dump()
     {
         foreach (func_get_args() as $arg) {
@@ -193,6 +335,9 @@ abstract class Command extends SymfonyCommand
         exit;
     }
 
+    /**
+     * Print new line
+     */
     protected function nl()
     {
         $this->writeln('');
