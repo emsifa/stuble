@@ -2,8 +2,8 @@
 
 namespace Emsifa\Stuble\Concerns;
 
-use Emsifa\Stuble\Filters;
 use Closure;
+use Emsifa\Stuble\Filters;
 
 trait FilterUtils
 {
@@ -18,24 +18,24 @@ trait FilterUtils
         }
 
         $baseFilters = [
-            'lower'     => 'strtolower',
-            'upper'     => 'strtoupper',
-            'ucfirst'   => 'ucfirst',
-            'ucwords'   => 'ucwords',
-            'kebab'     => [Filters::class, 'kebab'],
-            'snake'     => [Filters::class, 'snake'],
-            'camel'     => [Filters::class, 'camel'],
-            'pascal'    => [Filters::class, 'pascal'],
-            'studly'    => [Filters::class, 'studly'],
-            'title'     => [Filters::class, 'title'],
-            'words'     => [Filters::class, 'words'],
-            'plural'    => [Filters::class, 'plural'],
-            'singular'  => [Filters::class, 'singular'],
-            'replace'   => [Filters::class, 'replace'],
+            'lower' => 'strtolower',
+            'upper' => 'strtoupper',
+            'ucfirst' => 'ucfirst',
+            'ucwords' => 'ucwords',
+            'kebab' => [Filters::class, 'kebab'],
+            'snake' => [Filters::class, 'snake'],
+            'camel' => [Filters::class, 'camel'],
+            'pascal' => [Filters::class, 'pascal'],
+            'studly' => [Filters::class, 'studly'],
+            'title' => [Filters::class, 'title'],
+            'words' => [Filters::class, 'words'],
+            'plural' => [Filters::class, 'plural'],
+            'singular' => [Filters::class, 'singular'],
+            'replace' => [Filters::class, 'replace'],
         ];
 
         foreach ($baseFilters as $key => $filter) {
-            if (!static::hasGlobalFilter($key)) {
+            if (! static::hasGlobalFilter($key)) {
                 static::globalFilter($key, $filter);
             }
         }
@@ -65,7 +65,7 @@ trait FilterUtils
 
     public function applyFilter(string $key, string $value, array $args)
     {
-        if (!isset($this->filters[$key])) {
+        if (! isset($this->filters[$key])) {
             throw new \RuntimeException("Filter '{$key}' is not defined.");
         }
 

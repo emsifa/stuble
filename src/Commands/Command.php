@@ -3,8 +3,6 @@
 namespace Emsifa\Stuble\Commands;
 
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use Symfony\Component\Console\ConsoleEvents;
-use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -13,7 +11,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 abstract class Command extends SymfonyCommand
 {
@@ -59,7 +56,7 @@ abstract class Command extends SymfonyCommand
             $arg = array_merge([
                 'type' => InputArgument::REQUIRED,
                 'description' => '',
-                'default' => null
+                'default' => null,
             ], $arg);
 
             $this->addArgument($key, $arg['type'], $arg['description'], $arg['default']);
@@ -97,6 +94,7 @@ abstract class Command extends SymfonyCommand
             $question .= " <fg=magenta>[{$default}]</>";
         }
         $question = new Question($question.' ');
+
         return $helper->ask($this->input, $this->output, $question);
     }
 
@@ -104,18 +102,21 @@ abstract class Command extends SymfonyCommand
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion($question.' ', $default, '/^(y)/i');
+
         return $helper->ask($this->input, $this->output, $question);
     }
 
     protected function write(string $text, $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
+
         return $this->output->write($text);
     }
 
     protected function writeln(string $text, $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
+
         return $this->output->writeln($text);
     }
 
@@ -163,18 +164,18 @@ abstract class Command extends SymfonyCommand
     protected function registerOutputStyles()
     {
         $styles = [
-            'info'      => ['fg' => 'blue'],
-            'success'   => ['fg' => 'green'],
-            'warning'   => ['fg' => 'yellow'],
-            'danger'    => ['fg' => 'red'],
-            'error'     => ['fg' => 'white', 'bg' => 'red', ['bold']],
+            'info' => ['fg' => 'blue'],
+            'success' => ['fg' => 'green'],
+            'warning' => ['fg' => 'yellow'],
+            'danger' => ['fg' => 'red'],
+            'error' => ['fg' => 'white', 'bg' => 'red', ['bold']],
         ];
 
         foreach ($styles as $key => $style) {
             $style = array_merge([
                 'fg' => null,
                 'bg' => null,
-                'options' => []
+                'options' => [],
             ], $style);
 
             $this->output->getFormatter()->setStyle($key, new OutputFormatterStyle($style['fg'], $style['bg'], $style['options']));

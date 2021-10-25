@@ -2,13 +2,9 @@
 
 namespace Emsifa\Stuble\Commands;
 
-use Emsifa\Stuble\Gitignore;
-use Emsifa\Stuble\Stuble;
-use Emsifa\Stuble\Parser;
 use Emsifa\Stuble\Filters;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Emsifa\Stuble\Gitignore;
+use Emsifa\Stuble\Parser;
 
 class Stublify extends StubleCommand
 {
@@ -20,21 +16,21 @@ class Stublify extends StubleCommand
 
     protected $args = [
         'file' => [
-            'description' => 'File or directory to transform.'
+            'description' => 'File or directory to transform.',
         ],
         'dest' => [
-            'description' => 'Output filename or directory name.'
-        ]
+            'description' => 'Output filename or directory name.',
+        ],
     ];
 
     protected $options = [
         'global' => [
             'alias' => 'G',
-            'description' => 'Save stubs to global path ($STUBLE_HOME/stubs).'
+            'description' => 'Save stubs to global path ($STUBLE_HOME/stubs).',
         ],
         'force' => [
             'alias' => 'f',
-            'description' => 'Force rewrite existing stubs.'
+            'description' => 'Force rewrite existing stubs.',
         ],
     ];
 
@@ -52,17 +48,17 @@ class Stublify extends StubleCommand
 
         // DO SOME CHECKS AND CONFIRMATION
         // -------------------------------------------------------------------------
-        if (!$filepath) {
+        if (! $filepath) {
             return $this->error("File or directory '{$file}' is not exists.");
         }
 
-        if (file_exists($destPath) && !$force) {
+        if (file_exists($destPath) && ! $force) {
             return $this->error("Whoops! Seems like you have '{$file}' exists in your stubs directory. Use '-f' to force rewrite.");
         }
 
         if (file_exists($destPath) && $force) {
             $this->warning("\n[WARNING]\nYour current '{$file}' stub(s) will be deleted and replaced with new one.");
-            if (!$this->confirm("Do you want to continue [y/N]?", false)) {
+            if (! $this->confirm("Do you want to continue [y/N]?", false)) {
                 $this->info("Canceled!");
                 exit;
             }
@@ -89,7 +85,7 @@ class Stublify extends StubleCommand
         while (true) {
             $this->nl();
             $text = $this->askTextToReplace();
-            if (!$text) {
+            if (! $text) {
                 break;
             }
 
@@ -103,13 +99,14 @@ class Stublify extends StubleCommand
                 $this->warning(str_repeat("-", 60));
                 $this->writeln("Whoops. No file contain '{$text}'.", "danger", ['bold']);
                 $this->warning(str_repeat("-", 60));
+
                 continue;
             }
 
             $parameter = $this->askParameter($text);
             $replaces[$text] = [
                 'files' => $files,
-                'parameter' => $parameter
+                'parameter' => $parameter,
             ];
 
             if ($this->confirm("Do you want to replace other formats of '{$text}' [Y/n]?", true)) {
@@ -153,7 +150,7 @@ class Stublify extends StubleCommand
                 }
                 $content = file_get_contents($file);
                 $content = $this->putConfigs($content, [
-                    'path' => $relativePath
+                    'path' => $relativePath,
                 ]);
                 file_put_contents($file, $content);
             }
@@ -202,15 +199,15 @@ class Stublify extends StubleCommand
             }
 
             $filteredText = $filters->{$filter}($text);
-            if (!isset($excepts[$filteredText])) {
+            if (! isset($excepts[$filteredText])) {
                 $files = $this->findFilesContains($filteredText, $tempFiles);
                 if (count($files)) {
                     $otherFormats[$filteredText] = [
                         'files' => $files,
                         'parameter' => array_merge($parameter, [
                             'filters' => array_merge($usedFilters, [$filter]),
-                            'code' => '{? '.$parameter['key'].'.'.implode('.', array_merge($usedFilters, [$filter])).' ?}'
-                        ])
+                            'code' => '{? '.$parameter['key'].'.'.implode('.', array_merge($usedFilters, [$filter])).' ?}',
+                        ]),
                     ];
                 }
             }
@@ -242,8 +239,9 @@ class Stublify extends StubleCommand
     {
         $param = $this->ask("Replace '{$text}' with parameter:");
         $parameter = $this->parseParameter($param);
-        if (!$parameter) {
+        if (! $parameter) {
             $this->warning("Invalid parameter syntax '{$param}'.");
+
             return $this->askParameter($text);
         }
 
@@ -259,6 +257,7 @@ class Stublify extends StubleCommand
                 $files[] = $file;
             }
         }
+
         return $files;
     }
 
@@ -278,7 +277,7 @@ class Stublify extends StubleCommand
             $dest = $tempDir.'/'.$filepath.'.stub';
             $destdir = dirname($dest);
 
-            if (!is_dir($destdir)) {
+            if (! is_dir($destdir)) {
                 $this->makeDirectory($destdir);
             }
 
@@ -295,6 +294,7 @@ class Stublify extends StubleCommand
     {
         $content = file_get_contents($file);
         $content = str_replace($text, $replaced, $content);
+
         return file_put_contents($file, $content);
     }
 
@@ -306,6 +306,7 @@ class Stublify extends StubleCommand
         }
         $lines[] = "===";
         $lines[] = $content;
+
         return implode("\n", $lines);
     }
 
@@ -315,7 +316,7 @@ class Stublify extends StubleCommand
         $dir = "";
         foreach ($paths as $path) {
             $dir .= "/{$path}";
-            if (!is_dir($dir)) {
+            if (! is_dir($dir)) {
                 mkdir($dir);
             }
         }
@@ -355,7 +356,7 @@ class Stublify extends StubleCommand
     protected function parseParameter($parameterDeclaration)
     {
         $params = Parser::parse("{? $parameterDeclaration ?}");
-        if (!count($params)) {
+        if (! count($params)) {
             return null;
         } else {
             return $params[0];
@@ -368,16 +369,18 @@ class Stublify extends StubleCommand
         if (is_dir($filepath)) {
             $gitignores = [
                 $filepath.'/.gitignore',
-                $workingPath.'/.gitignore'
+                $workingPath.'/.gitignore',
             ];
 
             foreach ($gitignores as $gitignoreFile) {
                 if (is_file($gitignoreFile)) {
                     $gitignore = new Gitignore($gitignoreFile);
+
                     break;
                 }
             }
         }
+
         return $gitignore;
     }
 

@@ -3,8 +3,8 @@
 namespace Emsifa\Stuble\Commands;
 
 use Emsifa\Stuble\Helper;
-use Emsifa\Stuble\Stub;
 use Emsifa\Stuble\Result;
+use Emsifa\Stuble\Stub;
 use InvalidArgumentException;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,7 +19,7 @@ class Make extends StubleCommand
     protected $args = [
         'stub' => [
             'type' => InputArgument::REQUIRED,
-            'description' => 'Stub file/directory.'
+            'description' => 'Stub file/directory.',
         ],
         'parameters' => [
             'type' => InputArgument::IS_ARRAY,
@@ -30,19 +30,19 @@ class Make extends StubleCommand
     protected $options = [
         'dump' => [
             'alias' => 'd',
-            'description' => 'Dump render results.'
+            'description' => 'Dump render results.',
         ],
         'info' => [
             'type' => InputOption::VALUE_NONE,
             'description' => 'Show stub files and parameters needed from given stub file/directory.',
         ],
         'no-subdir' => [
-            'description' => 'Without subdirectories.'
+            'description' => 'Without subdirectories.',
         ],
         'excludes' => [
             'alias' => 'e',
             'type' => InputOption::VALUE_OPTIONAL,
-            'description' => 'Exclude some files.'
+            'description' => 'Exclude some files.',
         ],
         'skip-exists' => [
             'alias' => 'S',
@@ -57,15 +57,15 @@ class Make extends StubleCommand
         'show-stubs' => [
             'alias' => 'L',
             'type' => InputOption::VALUE_NONE,
-            'description' => 'Show list of stub files being generated.'
-        ]
+            'description' => 'Show list of stub files being generated.',
+        ],
     ];
 
     protected function handle()
     {
         $query = $this->argument('stub');
         $parameters = $this->argument('parameters');
-        $subdir = !$this->option('no-subdir');
+        $subdir = ! $this->option('no-subdir');
         $excludes = $this->option('excludes');
         $skipExists = $this->option('skip-exists');
         $overwrite = $this->option('overwrite');
@@ -97,6 +97,7 @@ class Make extends StubleCommand
         $stubs = array_map(function ($file) {
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
+
             return $this->stuble->makeStub($sourceName.':'.$sourcePath);
         }, $stubsFiles);
 
@@ -105,6 +106,7 @@ class Make extends StubleCommand
         if ($info) {
             $this->displayStubsFiles($stubsFiles);
             $this->displayParameters($stubsParameters);
+
             return;
         }
 
@@ -117,7 +119,7 @@ class Make extends StubleCommand
 
         $dump = $this->option('dump');
 
-        if (!$dump) {
+        if (! $dump) {
             foreach ($stubs as $stub) {
                 $result = $stub->render($paramsValues);
                 $this->processFile($result, $stub, $skipExists, $overwrite);
@@ -159,10 +161,10 @@ class Make extends StubleCommand
         $excludes = array_map(function ($pattern) {
             $pattern = trim($pattern);
             $hasAsterisk = strpos($pattern, '*');
-            if (!$hasAsterisk) {
+            if (! $hasAsterisk) {
                 return [
                     'type' => 'exact',
-                    'pattern' => preg_replace("/\.stub$/", "", $pattern).".stub"
+                    'pattern' => preg_replace("/\.stub$/", "", $pattern).".stub",
                 ];
             } else {
                 $replacers = [
@@ -177,7 +179,7 @@ class Make extends StubleCommand
 
                 return [
                     'type' => 'regex',
-                    'pattern' => "/".$pattern."/"
+                    'pattern' => "/".$pattern."/",
                 ];
             }
         }, explode(",", $excludes));
@@ -191,6 +193,7 @@ class Make extends StubleCommand
                     return false;
                 }
             }
+
             return true;
         });
     }
@@ -204,10 +207,11 @@ class Make extends StubleCommand
 
         if ($append) {
             $dest = $this->getWorkingPath().'/'.$append['file'];
+
             return $this->append($content, $append);
         }
 
-        if (!$savePath) {
+        if (! $savePath) {
             $savePath = $this->ask("Set {$filename} save path:");
         }
 
@@ -218,7 +222,7 @@ class Make extends StubleCommand
             return $this->skip($savePath);
         }
 
-        if ($fileExists && !$overwrite && !$this->confirmOverwrite($savePath)) {
+        if ($fileExists && ! $overwrite && ! $this->confirmOverwrite($savePath)) {
             return $this->skip($savePath);
         }
 
@@ -281,11 +285,11 @@ class Make extends StubleCommand
         foreach ($stubles as $stuble) {
             $stubleParams = $stuble->getParamsValues(false);
             foreach ($stubleParams as $key => $value) {
-                if (!isset($params[$key])) {
+                if (! isset($params[$key])) {
                     $params[$key] = $value;
                 }
 
-                if (!$params[$key] && $value) {
+                if (! $params[$key] && $value) {
                     $params[$key] = $value;
                 }
             }
@@ -326,7 +330,7 @@ class Make extends StubleCommand
     {
         $line = $this->findLineNumber($dest, $keyword);
 
-        if (!file_exists($dest)) {
+        if (! file_exists($dest)) {
             $text = $text."\n".$keyword."\n";
         }
 
@@ -337,7 +341,7 @@ class Make extends StubleCommand
     {
         $line = $this->findLineNumber($dest, $keyword);
 
-        if (!file_exists($dest)) {
+        if (! file_exists($dest)) {
             $text = $keyword."\n".$text;
         }
 
@@ -350,7 +354,7 @@ class Make extends StubleCommand
             return file_put_contents($dest, $text);
         }
 
-        if (!file_exists($dest)) {
+        if (! file_exists($dest)) {
             return file_put_contents($dest, $text);
         }
 
@@ -358,12 +362,13 @@ class Make extends StubleCommand
         array_splice($lines, $line - 1, 0, $text);
 
         $content = implode("\n", $lines);
+
         return file_put_contents($dest, $content);
     }
 
     protected function findLineNumber($dest, $keyword)
     {
-        if (!file_exists($dest)) {
+        if (! file_exists($dest)) {
             return 0;
         }
 
@@ -384,9 +389,10 @@ class Make extends StubleCommand
     public function filterDuplicates(array $stubsFiles)
     {
         return array_values(array_reduce($stubsFiles, function ($result, $stubFile) {
-            if (!isset($result[$stubFile['source_path']])) {
+            if (! isset($result[$stubFile['source_path']])) {
                 $result[$stubFile['source_path']] = $stubFile;
             }
+
             return $result;
         }, []));
     }
@@ -398,6 +404,7 @@ class Make extends StubleCommand
             [$key, $value] = $this->extractParameter($param);
             $values[$key] = $value;
         }
+
         return $values;
     }
 
@@ -425,7 +432,7 @@ class Make extends StubleCommand
 
         $requiredKeys = [];
         foreach ($stubsParameters as $k => $v) {
-            if (!$v) {
+            if (! $v) {
                 $requiredKeys[] = $k;
             }
         }

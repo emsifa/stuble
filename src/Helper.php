@@ -15,7 +15,7 @@ class Helper
         while (count($paths)) {
             $path .= "/" . array_shift($paths);
 
-            if (!is_dir($drive . $path)) {
+            if (! is_dir($drive . $path)) {
                 mkdir($drive . $path);
             }
         }

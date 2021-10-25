@@ -35,12 +35,12 @@ class Gitignore
             }
 
             if ($match) {
-                return !$pattern['is_negate'];
+                return ! $pattern['is_negate'];
             }
         }
+
         return false;
     }
-
 
     protected function parseFile($file)
     {
@@ -88,7 +88,7 @@ class Gitignore
             'path' => $path,
             'regex' => $regex,
             'is_negate' => $isNegate,
-            'is_dir' => !$hasAsterisk ? is_dir($path) : false,
+            'is_dir' => ! $hasAsterisk ? is_dir($path) : false,
         ];
     }
 }
