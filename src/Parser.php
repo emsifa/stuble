@@ -113,7 +113,6 @@ class Parser
             $prev = $i > 0 ? $chars[$i - 1] : null;
             $state = $states[count($states) - 1];
             if ($open) {
-                
             }
 
             switch ($state) {
