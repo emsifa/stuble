@@ -241,6 +241,7 @@ class Make extends StubleCommand
 
         if ($append) {
             $this->append($content, $append);
+
             return;
         }
 
@@ -471,11 +472,13 @@ class Make extends StubleCommand
     {
         if ($line < 1) {
             file_put_contents($dest, $text);
+
             return;
         }
 
         if (! file_exists($dest)) {
             file_put_contents($dest, $text);
+
             return;
         }
 
