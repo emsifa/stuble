@@ -63,7 +63,7 @@ class Stuble
         $path = $this->getPath($pathname);
         $stubs = $this->getStubsFilesFromDirectory($path.'/stubs');
 
-        return array_map(function ($filepath) use ($pathname, $path) {
+        return array_map(function ($filepath) use ($pathname) {
             return $this->makeStubPathInfo($filepath, $pathname);
         }, $stubs);
     }
@@ -142,7 +142,7 @@ class Stuble
             }
         }
 
-        return false;
+        return null;
     }
 
     public function findStubsFiles(string $query, $subdirs = true): array

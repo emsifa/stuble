@@ -63,11 +63,7 @@ class Ls extends StubleCommand
             $ca = count(explode('/', $a['path']));
             $cb = count(explode('/', $b['path']));
 
-            if ($ca == $cb) {
-                return $a['path'] > $b['path'];
-            } else {
-                return $ca > $cb;
-            }
+            return $ca - $cb;
         });
 
         $ungroupeds = [];
@@ -94,7 +90,7 @@ class Ls extends StubleCommand
         if ($ungroupeds) {
             print(PHP_EOL);
             foreach ($ungroupeds as $file) {
-                $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
+                $num = str_pad((string) ++$n, $d, ' ', STR_PAD_LEFT);
                 $this->showFile($num, $file, $keyword);
             }
         }
@@ -105,7 +101,7 @@ class Ls extends StubleCommand
                 $this->writeln("<fg=green;options=bold>".str_repeat(' ', $d) . "  {$dir}</>");
             }
             foreach ($files as $file) {
-                $num = str_pad(++$n, $d, ' ', STR_PAD_LEFT);
+                $num = str_pad((string) ++$n, $d, ' ', STR_PAD_LEFT);
                 $this->showFile($num, $file, $keyword);
             }
         }
@@ -132,8 +128,6 @@ class Ls extends StubleCommand
 
     public function getFiles()
     {
-        $globalFiles = [];
-        $localFiles = [];
         $global = $this->option('global');
         $local = $this->option('local');
 

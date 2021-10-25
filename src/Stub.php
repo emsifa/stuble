@@ -7,8 +7,10 @@ class Stub
     use Concerns\FilterUtils;
     use Concerns\HelperUtils;
 
-    protected $stub;
-    protected $params;
+    public string $filename;
+    public string $filepath;
+    protected string $stub;
+    protected array $params;
 
     public function __construct(string $filepath)
     {
@@ -96,7 +98,7 @@ class Stub
         return new Result($stub);
     }
 
-    protected function fillValues(array $params, array $values)
+    protected function fillValues(array $params, array $values): array
     {
         foreach ($params as $i => $param) {
             if (isset($values[$param['key']])) {
@@ -115,7 +117,7 @@ class Stub
             return $param['key'];
         }, $params));
 
-        foreach ($params as $i => $param) {
+        foreach ($params as $param) {
             if (isset($param['args'])) {
                 foreach ($param['args'] as $arg) {
                     if ($arg['type'] == Parser::PARAM_VAR && ! in_array($arg['value'], $keys)) {

@@ -76,6 +76,9 @@ class Parser
         return $results;
     }
 
+    /**
+     * @psalm-suppress UnusedVariable
+     */
     public static function lex(string $str)
     {
         $tags = [];

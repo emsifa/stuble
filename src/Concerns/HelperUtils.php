@@ -17,10 +17,13 @@ trait HelperUtils
             return;
         }
 
-        $putHelper = function (string $file, ...$args) {
+        /**
+         * @psalm-suppress UnusedClosureParam, InvalidScope
+         */
+        $putHelper = function (string $file) {
             $dir = dirname($this->getFilepath());
             $params = $this->getParamsValues();
-            $filepath = $dir.'/'.ltrim($file, '/');
+            $filepath = $dir . '/' . ltrim($file, '/');
 
             if (pathinfo($filepath, PATHINFO_EXTENSION) != 'stub') {
                 $filepath .= '.stub';

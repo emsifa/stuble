@@ -72,7 +72,6 @@ class Result
 
     protected function parseContent(string $content)
     {
-        $options = [];
         [$content, $options] = $this->splitOptionsFromContent($content);
 
         $options = $options ? $this->parseOptions($options) : [];

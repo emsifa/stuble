@@ -185,6 +185,9 @@ abstract class Command extends SymfonyCommand
     protected function dump()
     {
         foreach (func_get_args() as $arg) {
+            /**
+             * @psalm-suppress ForbiddenCode
+             */
             var_dump($arg);
         }
         exit;

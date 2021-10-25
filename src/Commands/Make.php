@@ -140,7 +140,8 @@ class Make extends StubleCommand
         foreach ($stubsFiles as $i => $file) {
             $sourcePath = ltrim($file['source_path'], '/');
             $sourceName = $file['source'];
-            $this->text("<fg=blue;options=bold> " . str_pad($i + 1, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$sourceName}</>/{$sourcePath}");
+            $no = intval($i) + 1;
+            $this->text("<fg=blue;options=bold> " . str_pad((string) $no, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$sourceName}</>/{$sourcePath}");
         }
         $this->nl();
     }
@@ -152,7 +153,7 @@ class Make extends StubleCommand
         $this->writeln(str_repeat(" ", $digitsCount + 2)." <fg=blue;options=bold>PARAMETERS</> ");
         $i = 0;
         foreach ($parameters as $key => $value) {
-            $this->text("<fg=blue;options=bold> " . str_pad(++$i, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$key}</>" . ($value ? ": {$value}" : ""));
+            $this->text("<fg=blue;options=bold> " . str_pad((string) ++$i, $digitsCount, " ", STR_PAD_LEFT) . " </> <fg=green;options=bold>{$key}</>" . ($value ? ": {$value}" : ""));
         }
     }
 
@@ -206,8 +207,6 @@ class Make extends StubleCommand
         $append = $result->getAppendOption();
 
         if ($append) {
-            $dest = $this->getWorkingPath().'/'.$append['file'];
-
             return $this->append($content, $append);
         }
 

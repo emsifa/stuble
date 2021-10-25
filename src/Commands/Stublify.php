@@ -34,6 +34,9 @@ class Stublify extends StubleCommand
         ],
     ];
 
+    /**
+     * @psalm-suppress UndefinedConstant
+     */
     protected function handle()
     {
         $file = $this->argument('file');
