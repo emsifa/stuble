@@ -4,26 +4,59 @@ namespace Emsifa\Stuble;
 
 class Gitignore
 {
-    protected $gitignoreFile;
-    protected $patterns = [];
+    /**
+     * Path to .gitignore file
+     *
+     * @var string
+     */
+    protected string $gitignoreFile;
 
-    public function __construct($gitignoreFile)
+    /**
+     * Gitignore rule patterns
+     *
+     * @var array
+     */
+    protected array $patterns = [];
+
+    /**
+     * Constructor
+     *
+     * @param string $gitignoreFile Path to .gitignore file
+     */
+    public function __construct(string $gitignoreFile)
     {
         $this->gitignoreFile = $gitignoreFile;
         $this->patterns = $this->parseFile($gitignoreFile);
     }
 
-    public function getBaseDirectory()
+    /**
+     * Get base directory absolute path
+     * based on .gitignore file directory
+     *
+     * @return string|false
+     */
+    public function getBaseDirectory(): string|false
     {
         return realpath(dirname($this->gitignoreFile));
     }
 
-    public function getParsedPatterns()
+    /**
+     * Get parsed .gitignore rule patterns
+     *
+     * @return array
+     */
+    public function getParsedPatterns(): array
     {
         return $this->patterns;
     }
 
-    public function isIgnoring($filepath)
+    /**
+     * Check if given filepath is ignored by .gitignore
+     *
+     * @param  string $filepath
+     * @return bool
+     */
+    public function isIgnoring(string $filepath): bool
     {
         foreach ($this->getParsedPatterns() as $pattern) {
             if ($pattern['regex']) {
@@ -42,7 +75,13 @@ class Gitignore
         return false;
     }
 
-    protected function parseFile($file)
+    /**
+     * Parse gitignore patterns from given file
+     *
+     * @param  string $file  .gitignore file path
+     * @return array
+     */
+    protected function parseFile(string $file): array
     {
         $content = file_get_contents($file);
         $lines = explode("\n", $content);
@@ -72,7 +111,13 @@ class Gitignore
         return $patterns;
     }
 
-    protected function parsePattern($line)
+    /**
+     * Parse pattern from given string $line
+     *
+     * @param  string $line  Gitignore line content
+     * @return array
+     */
+    protected function parsePattern(string $line): array
     {
         $dir = $this->getBaseDirectory();
 
