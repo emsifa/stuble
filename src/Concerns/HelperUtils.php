@@ -11,13 +11,16 @@ trait HelperUtils
     protected static $globalHelpers = [];
     protected $helpers = [];
 
+    /**
+     * @return void
+     */
     public static function initializeGlobalHelpers()
     {
         if (static::$hasInitializeGlobalHelpers) {
             return;
         }
 
-        $putHelper = function (string $file, ...$args) {
+        $putHelper = function (string $file, ...$args): \Emsifa\Stuble\Result {
             $dir = dirname($this->getFilepath());
             $params = $this->getParamsValues();
             $filepath = $dir.'/'.ltrim($file, '/');
@@ -45,22 +48,22 @@ trait HelperUtils
         static::$hasInitializeGlobalHelpers = true;
     }
 
-    public static function globalHelper(string $key, callable $helper)
+    public static function globalHelper(string $key, callable $helper): void
     {
         static::$globalHelpers[$key] = $helper;
     }
 
-    public static function hasGlobalHelper(string $key)
+    public static function hasGlobalHelper(string $key): bool
     {
         return isset(static::$globalHelpers[$key]);
     }
 
-    public function helper(string $key, callable $helper)
+    public function helper(string $key, callable $helper): void
     {
         $this->helpers[$key] = $helper;
     }
 
-    public function hasHelper(string $key)
+    public function hasHelper(string $key): bool
     {
         return isset($this->helpers[$key]);
     }

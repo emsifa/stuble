@@ -24,7 +24,12 @@ class Parser
     public const PARAM_NUM = 14;
     public const CLOSE_FILTER_PARAMS = 15;
 
-    public static function parse(string $str)
+    /**
+     * @return ((array[]|mixed)[][]|mixed|string)[][]
+     *
+     * @psalm-return list<array{key: ''|mixed, type: ''|mixed, value: ''|mixed, filters: array<int, array{key: mixed, args: list<array{type: mixed, value: mixed}>}>, code: mixed, args: list<array{type: mixed, value: mixed}>}>
+     */
+    public static function parse(string $str): array
     {
         $codes = static::lex($str);
         $results = [];
@@ -87,7 +92,7 @@ class Parser
         $open = false;
         $code = "";
 
-        $reset = function () use (&$tags, &$n, &$tok, &$states) {
+        $reset = function () use (&$tags, &$n, &$tok, &$states): void {
             $tok = "";
             $tags[$n] = [
                 'tokens' => [],
@@ -95,7 +100,7 @@ class Parser
             $states = [static::CONTENT];
         };
 
-        $close = function () use (&$tags, &$n, &$reset, &$open, &$code) {
+        $close = function () use (&$tags, &$n, &$reset, &$open, &$code): void {
             $tags[$n]['tokens'][] = [static::CLOSE_TAG];
             $tags[$n]['code'] = $code;
             $open = false;
@@ -108,7 +113,7 @@ class Parser
             $prev = $i > 0 ? $chars[$i - 1] : null;
             $state = $states[count($states) - 1];
             if ($open) {
-                $code .= $char;
+                
             }
 
             switch ($state) {
@@ -352,22 +357,22 @@ class Parser
         return $tags;
     }
 
-    protected static function strIs(string $str, string $rg)
+    protected static function strIs(string $str, string $rg): bool
     {
         return (bool) preg_match($rg, $str);
     }
 
-    protected static function isWhitespace(string $str)
+    protected static function isWhitespace(string $str): bool
     {
         return (bool) static::strIs($str, "/\s+/");
     }
 
-    protected static function strStart(string $str, string $start)
+    protected static function strStart(string $str, string $start): bool
     {
         return strpos($str, $start) === 0;
     }
 
-    protected static function endsWith(string $str, string $start)
+    protected static function endsWith(string $str, string $start): bool
     {
         return strpos($str, $start) === strlen($str) - strlen($start);
     }

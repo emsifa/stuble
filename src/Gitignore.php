@@ -13,7 +13,10 @@ class Gitignore
         $this->patterns = $this->parseFile($gitignoreFile);
     }
 
-    public function getBaseDirectory()
+    /**
+     * @return false|string
+     */
+    public function getBaseDirectory(): string|false
     {
         return realpath(dirname($this->gitignoreFile));
     }
@@ -23,7 +26,7 @@ class Gitignore
         return $this->patterns;
     }
 
-    public function isIgnoring($filepath)
+    public function isIgnoring($filepath): bool
     {
         foreach ($this->getParsedPatterns() as $pattern) {
             if ($pattern['regex']) {
@@ -42,7 +45,10 @@ class Gitignore
         return false;
     }
 
-    protected function parseFile($file)
+    /**
+     * @psalm-return array<int, mixed>
+     */
+    protected function parseFile($file): array
     {
         $content = file_get_contents($file);
         $lines = explode("\n", $content);
@@ -72,7 +78,12 @@ class Gitignore
         return $patterns;
     }
 
-    protected function parsePattern($line)
+    /**
+     * @return (bool|mixed|null|string)[]
+     *
+     * @psalm-return array{pattern: mixed, path: string, regex: null|string, is_negate: bool, is_dir: bool}
+     */
+    protected function parsePattern(string $line): array
     {
         $dir = $this->getBaseDirectory();
 

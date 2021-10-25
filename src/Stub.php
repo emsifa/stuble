@@ -37,7 +37,7 @@ class Stub
         return $this->params;
     }
 
-    public function getParamsValues($includeHelper = true)
+    public function getParamsValues($includeHelper = true): array
     {
         $values = [];
 
@@ -58,7 +58,7 @@ class Stub
         return $values;
     }
 
-    public function setParamsValues(array $values)
+    public function setParamsValues(array $values): void
     {
         $this->params = $this->fillValues($this->params, $values);
     }
@@ -96,7 +96,7 @@ class Stub
         return new Result($stub);
     }
 
-    protected function fillValues(array $params, array $values)
+    protected function fillValues(array $params, array $values): array
     {
         foreach ($params as $i => $param) {
             if (isset($values[$param['key']])) {
@@ -148,7 +148,12 @@ class Stub
         return $params;
     }
 
-    protected function resolveArgs(array $args, array $paramsValues)
+    /**
+     * @return (float|int|mixed|null|string)[]
+     *
+     * @psalm-return list<float|int|mixed|null|string>
+     */
+    protected function resolveArgs(array $args, array $paramsValues): array
     {
         $results = [];
         foreach ($args as $arg) {

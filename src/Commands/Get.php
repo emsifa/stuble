@@ -28,6 +28,9 @@ class Get extends StubleCommand
      */
     protected $client;
 
+    /**
+     * @return void
+     */
     protected function handle()
     {
         $repository = $this->argument("repository");
@@ -60,7 +63,7 @@ class Get extends StubleCommand
         unlink($archivePath);
     }
 
-    protected function ensureRepositoryValid(string $repository)
+    protected function ensureRepositoryValid(string $repository): void
     {
         if (! preg_match("/^([a-zA-z0-9\._-]+)\/([a-zA-z0-9\._-]+)(\@[a-zA-z0-9\._-]+)?$/", $repository)) {
             $this->error("Invalid repository name: $repository");
@@ -68,7 +71,7 @@ class Get extends StubleCommand
         }
     }
 
-    protected function ensureRepositoryExists(string $repository)
+    protected function ensureRepositoryExists(string $repository): void
     {
         $url = $this->getRepositoryUrl($repository);
         if (! $this->isUrlExists($url)) {
@@ -77,7 +80,7 @@ class Get extends StubleCommand
         }
     }
 
-    protected function ensureVersionExists(string $repository, string $version)
+    protected function ensureVersionExists(string $repository, string $version): void
     {
         $url = $this->getVersionUrl($repository, $version);
         if (! $this->isUrlExists($url)) {
@@ -103,17 +106,17 @@ class Get extends StubleCommand
         return $this->getWorkingPath()."/stubs/{$repository}";
     }
 
-    protected function getRepositoryUrl(string $repository)
+    protected function getRepositoryUrl(string $repository): string
     {
         return "https://github.com/{$repository}";
     }
 
-    protected function getArchiveUrl(string $repository, $version): string
+    protected function getArchiveUrl(string $repository, string $version): string
     {
         return "https://github.com/{$repository}/archive/{$version}.tar.gz";
     }
 
-    protected function getVersionUrl(string $repository, $version): string
+    protected function getVersionUrl(string $repository, string $version): string
     {
         return "https://github.com/{$repository}/tree/{$version}";
     }
@@ -133,7 +136,7 @@ class Get extends StubleCommand
         return "{$repoName}-{$version}";
     }
 
-    protected function downloadArchive(string $archiveUrl, string $archivePath)
+    protected function downloadArchive(string $archiveUrl, string $archivePath): void
     {
         $file = fopen($archivePath, "w");
 
@@ -142,7 +145,7 @@ class Get extends StubleCommand
         ]);
     }
 
-    protected function extractArchive(string $archivePath, string $dest, string $rootDir)
+    protected function extractArchive(string $archivePath, string $dest, string $rootDir): void
     {
         $repoName = basename($dest);
         $dest = dirname($dest);
@@ -154,7 +157,7 @@ class Get extends StubleCommand
         rename("{$dest}/{$rootDir}", "{$dest}/{$repoName}");
     }
 
-    protected function isUrlExists(string $url)
+    protected function isUrlExists(string $url): bool
     {
         try {
             $response = $this->getHttpClient()->head($url);
@@ -165,14 +168,14 @@ class Get extends StubleCommand
         }
     }
 
-    protected function removeDirIfExists(string $path)
+    protected function removeDirIfExists(string $path): void
     {
         if (is_dir($path)) {
             Helper::removeDir($path);
         }
     }
 
-    protected function getHttpClient()
+    protected function getHttpClient(): Client
     {
         if (! $this->client) {
             $this->client = new Client();

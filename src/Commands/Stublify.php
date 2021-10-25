@@ -176,7 +176,12 @@ class Stublify extends StubleCommand
         }
     }
 
-    protected function findOtherFormats(array $tempFiles, $text, $parameter, $excepts = [])
+    /**
+     * @return (array[]|mixed)[]
+     *
+     * @psalm-return array<array{files: array, parameter: array}|mixed>
+     */
+    protected function findOtherFormats(array $tempFiles, string $text, array $parameter, array $excepts = []): array
     {
         $filters = new Filters();
         $usedFilters = $parameter['filters'] ?: [];
@@ -228,7 +233,7 @@ class Stublify extends StubleCommand
         return $otherFormats;
     }
 
-    protected function process($info, callable $process)
+    protected function process($info, callable $process): void
     {
         $this->write($info." ... ", "info");
         call_user_func($process);
@@ -261,12 +266,17 @@ class Stublify extends StubleCommand
         return $files;
     }
 
-    protected function askTextToReplace()
+    protected function askTextToReplace(): string
     {
         return trim($this->ask("Type text to be replaced:"));
     }
 
-    protected function createTempFiles(array $files, $sourceDir)
+    /**
+     * @return string[]
+     *
+     * @psalm-return list<string>
+     */
+    protected function createTempFiles(array $files, $sourceDir): array
     {
         $tempDir = $this->tempDir;
         $tempFiles = [];
@@ -290,7 +300,14 @@ class Stublify extends StubleCommand
         return $tempFiles;
     }
 
-    protected function replaceTextInFile($text, $replaced, $file)
+    /**
+     * @param (int|string) $text
+     *
+     * @psalm-param array-key $text
+     *
+     * @return false|int
+     */
+    protected function replaceTextInFile($text, $replaced, $file): int|false
     {
         $content = file_get_contents($file);
         $content = str_replace($text, $replaced, $content);
@@ -298,7 +315,7 @@ class Stublify extends StubleCommand
         return file_put_contents($file, $content);
     }
 
-    protected function putConfigs($content, array $configs)
+    protected function putConfigs(string|false $content, array $configs): string
     {
         $lines[] = "===";
         foreach ($configs as $key => $value) {
@@ -310,7 +327,7 @@ class Stublify extends StubleCommand
         return implode("\n", $lines);
     }
 
-    protected function makeDirectory($directory)
+    protected function makeDirectory(string $directory): void
     {
         $paths = explode("/", $directory);
         $dir = "";
@@ -322,7 +339,12 @@ class Stublify extends StubleCommand
         }
     }
 
-    protected function getFiles($filepath, $gitignore = null)
+    /**
+     * @return (mixed|string)[]
+     *
+     * @psalm-return array<mixed|string>
+     */
+    protected function getFiles(string $filepath, $gitignore = null): array
     {
         if (is_file($filepath)) {
             return [$filepath];
@@ -363,7 +385,7 @@ class Stublify extends StubleCommand
         }
     }
 
-    protected function makeGitignore($filepath, $workingPath)
+    protected function makeGitignore(string $filepath, $workingPath): Gitignore|null
     {
         $gitignore = null;
         if (is_dir($filepath)) {
@@ -384,7 +406,7 @@ class Stublify extends StubleCommand
         return $gitignore;
     }
 
-    protected function removeFileOrDirectory($fileOrDir)
+    protected function removeFileOrDirectory(string $fileOrDir): void
     {
         if (is_file($fileOrDir)) {
             unlink($fileOrDir);
@@ -398,11 +420,14 @@ class Stublify extends StubleCommand
         }
     }
 
-    protected function dispatchSignal()
+    protected function dispatchSignal(): void
     {
         pcntl_signal_dispatch();
     }
 
+    /**
+     * @return never
+     */
     public function cleanup()
     {
         $this->removeFileOrDirectory($this->tempDir);

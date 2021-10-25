@@ -7,7 +7,7 @@ use RecursiveIteratorIterator;
 
 class Helper
 {
-    public static function createDirectoryIfNotExists($dir)
+    public static function createDirectoryIfNotExists(string $dir): void
     {
         list($drive, $dir) = static::splitDriveWithPath($dir);
         $paths = explode("/", $dir);
@@ -21,7 +21,7 @@ class Helper
         }
     }
 
-    public static function removeDir(string $dir)
+    public static function removeDir(string $dir): void
     {
         $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
@@ -38,8 +38,12 @@ class Helper
 
     /**
      * Split drive and path from windows filesystem
+     *
+     * @return (null|string)[]
+     *
+     * @psalm-return array{0: null|string, 1: string}
      */
-    private static function splitDriveWithPath($path)
+    private static function splitDriveWithPath($path): array
     {
         $splitted = explode(":", $path, 2);
 

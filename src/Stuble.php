@@ -68,7 +68,12 @@ class Stuble
         }, $stubs);
     }
 
-    protected function getStubsFilesFromDirectory(string $dir, $baseDir = null)
+    /**
+     * @return (mixed|string)[]
+     *
+     * @psalm-return array<mixed|string>
+     */
+    protected function getStubsFilesFromDirectory(string $dir, $baseDir = null): array
     {
         if (! $baseDir) {
             $baseDir = $dir;
@@ -127,7 +132,10 @@ class Stuble
         return $stuble;
     }
 
-    public function findStubPath(string $stub): ?string
+    /**
+     * @return false|string
+     */
+    public function findStubPath(string $stub): string|false
     {
         list($pathnames, $stub) = $this->parsePath($stub);
         foreach ($pathnames as $pathname) {
@@ -161,7 +169,14 @@ class Stuble
         return $results;
     }
 
-    protected function findStubsFilesFromDirectory(string $dir, string $query, $subdirs = true)
+    /**
+     * @param true $subdirs
+     *
+     * @return (mixed|string)[]|false
+     *
+     * @psalm-return array<mixed|string>|false
+     */
+    protected function findStubsFilesFromDirectory(string $dir, string $query, bool $subdirs = true): array|false
     {
         $dirPath = "{$dir}/{$query}";
         $filePath = "{$dir}/{$query}.stub";
@@ -200,7 +215,12 @@ class Stuble
         }
     }
 
-    protected function getStubleInitFiles(string $file)
+    /**
+     * @return string[]
+     *
+     * @psalm-return list<string>
+     */
+    protected function getStubleInitFiles(string $file): array
     {
         $pathnames = $this->getSortedPathNames();
         $dir = null;
@@ -224,12 +244,17 @@ class Stuble
         return array_reverse($files);
     }
 
-    protected function includeStubleInitFile(string $initFile, Stub $stuble)
+    protected function includeStubleInitFile(string $initFile, Stub $stuble): void
     {
         require($initFile);
     }
 
-    protected function makeStubPathInfo(string $filepath, string $pathname)
+    /**
+     * @return string[]
+     *
+     * @psalm-return array{path: string, source: string, source_path: string}
+     */
+    protected function makeStubPathInfo(string $filepath, string $pathname): array
     {
         $path = $this->getPath($pathname);
 

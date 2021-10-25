@@ -33,7 +33,7 @@ class Result
         return $this->getOption('path') ?: '';
     }
 
-    public function getAppendOption()
+    public function getAppendOption(): array|null
     {
         $append = $this->getOption('append');
         if (empty($append)) {
@@ -70,9 +70,14 @@ class Result
         return $this->getContent();
     }
 
-    protected function parseContent(string $content)
+    /**
+     * @return (array|mixed)[]
+     *
+     * @psalm-return array{0: mixed, 1: array<empty, empty>|mixed}
+     */
+    protected function parseContent(string $content): array
     {
-        $options = [];
+        
         [$content, $options] = $this->splitOptionsFromContent($content);
 
         $options = $options ? $this->parseOptions($options) : [];
@@ -80,7 +85,12 @@ class Result
         return [$content, $options];
     }
 
-    protected function splitOptionsFromContent(string $content)
+    /**
+     * @return string[]
+     *
+     * @psalm-return array{0: string, 1: string}
+     */
+    protected function splitOptionsFromContent(string $content): array
     {
         $lines = explode("\n", $content);
         if (isset($lines[0]) && trim($lines[0]) !== "===") {

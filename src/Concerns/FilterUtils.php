@@ -11,6 +11,9 @@ trait FilterUtils
     protected static $globalFilters = [];
     protected $filters = [];
 
+    /**
+     * @return void
+     */
     public static function initializeGlobalFilters()
     {
         if (static::$hasInitializeGlobalFilters) {
@@ -43,22 +46,22 @@ trait FilterUtils
         static::$hasInitializeGlobalFilters = true;
     }
 
-    public static function globalFilter(string $key, callable $filter)
+    public static function globalFilter(string $key, callable $filter): void
     {
         static::$globalFilters[$key] = $filter;
     }
 
-    public static function hasGlobalFilter(string $key)
+    public static function hasGlobalFilter(string $key): bool
     {
         return isset(static::$globalFilters[$key]);
     }
 
-    public function filter(string $key, callable $filter)
+    public function filter(string $key, callable $filter): void
     {
         $this->filters[$key] = $filter;
     }
 
-    public function hasFilter(string $key)
+    public function hasFilter(string $key): bool
     {
         return isset($this->filters[$key]);
     }

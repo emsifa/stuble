@@ -30,6 +30,9 @@ abstract class Command extends SymfonyCommand
      */
     protected $output;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName($this->name);
@@ -73,6 +76,9 @@ abstract class Command extends SymfonyCommand
         return $this->handle() ?: SymfonyCommand::SUCCESS;
     }
 
+    /**
+     * @return void
+     */
     protected function handle()
     {
     }
@@ -98,7 +104,10 @@ abstract class Command extends SymfonyCommand
         return $helper->ask($this->input, $this->output, $question);
     }
 
-    protected function confirm(string $question, $default = false)
+    /**
+     * @param false $default
+     */
+    protected function confirm(string $question, bool $default = false)
     {
         $helper = $this->getHelper('question');
         $question = new ConfirmationQuestion($question.' ', $default, '/^(y)/i');
@@ -106,21 +115,29 @@ abstract class Command extends SymfonyCommand
         return $helper->ask($this->input, $this->output, $question);
     }
 
-    protected function write(string $text, $style = null, array $options = [])
+    /**
+     * @param null|string $style
+     *
+     * @psalm-param 'info'|null $style
+     */
+    protected function write(string $text, string|null $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
 
         return $this->output->write($text);
     }
 
-    protected function writeln(string $text, $style = null, array $options = [])
+    /**
+     * @param null|string $style
+     */
+    protected function writeln(string $text, string|null $style = null, array $options = [])
     {
         $text = $this->formatText($text, $style, $options);
 
         return $this->output->writeln($text);
     }
 
-    protected function formatText(string $text, $style = null, array $options = [])
+    protected function formatText(string $text, $style = null, array $options = []): string
     {
         return $style ? "<{$style}>{$text}</>" : $text;
     }
@@ -155,13 +172,16 @@ abstract class Command extends SymfonyCommand
         return $this->writeln($text, 'success', $options);
     }
 
+    /**
+     * @return never
+     */
     protected function error(string $message)
     {
         $this->writeln($message, 'error');
         exit;
     }
 
-    protected function registerOutputStyles()
+    protected function registerOutputStyles(): void
     {
         $styles = [
             'info' => ['fg' => 'blue'],
@@ -182,6 +202,9 @@ abstract class Command extends SymfonyCommand
         }
     }
 
+    /**
+     * @return never
+     */
     protected function dump()
     {
         foreach (func_get_args() as $arg) {
@@ -190,7 +213,7 @@ abstract class Command extends SymfonyCommand
         exit;
     }
 
-    protected function nl()
+    protected function nl(): void
     {
         $this->writeln('');
     }

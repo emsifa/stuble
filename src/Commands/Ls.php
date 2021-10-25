@@ -33,6 +33,9 @@ class Ls extends StubleCommand
         ],
     ];
 
+    /**
+     * @return void
+     */
     protected function handle()
     {
         $keyword = $this->argument('keyword');
@@ -111,7 +114,7 @@ class Ls extends StubleCommand
         }
     }
 
-    protected function showFile($num, $file, $keyword)
+    protected function showFile(string $num, $file, $keyword): void
     {
         $filetype = $file['source'] == Stuble::KEY_WORKING_PATH ? 'L' : 'G';
         $filepath = $file['source_path'];
@@ -130,10 +133,10 @@ class Ls extends StubleCommand
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
 
-    public function getFiles()
+    public function getFiles(): array
     {
-        $globalFiles = [];
-        $localFiles = [];
+        
+        
         $global = $this->option('global');
         $local = $this->option('local');
 
@@ -152,7 +155,7 @@ class Ls extends StubleCommand
         return array_values($files);
     }
 
-    protected function filterFiles(array $files, string $keyword)
+    protected function filterFiles(array $files, string $keyword): array
     {
         return array_filter($files, function ($file) use ($keyword) {
             return is_numeric(strpos(strtolower($file['source_path']), strtolower($keyword)));

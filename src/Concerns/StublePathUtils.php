@@ -27,7 +27,12 @@ trait StublePathUtils
         return $this->paths;
     }
 
-    public function getSortedPathNames()
+    /**
+     * @return (int|string)[]
+     *
+     * @psalm-return list<array-key>
+     */
+    public function getSortedPathNames(): array
     {
         $paths = $this->paths;
         uasort($paths, function ($a, $b) {
