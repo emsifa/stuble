@@ -135,8 +135,6 @@ class Ls extends StubleCommand
 
     public function getFiles(): array
     {
-        
-        
         $global = $this->option('global');
         $local = $this->option('local');
 
