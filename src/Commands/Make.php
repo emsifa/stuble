@@ -12,11 +12,11 @@ use Symfony\Component\Console\Input\InputOption;
 
 class Make extends StubleCommand
 {
-    protected $name = 'make';
-    protected $description = 'Generate file by given stub file/directory.';
-    protected $help = '';
+    protected string $name = 'make';
+    protected string $description = 'Generate file by given stub file/directory.';
+    protected string $help = '';
 
-    protected $args = [
+    protected array $args = [
         'stub' => [
             'type' => InputArgument::REQUIRED,
             'description' => 'Stub file/directory.',
@@ -27,7 +27,7 @@ class Make extends StubleCommand
         ],
     ];
 
-    protected $options = [
+    protected array $options = [
         'dump' => [
             'alias' => 'd',
             'description' => 'Dump render results.',
@@ -61,6 +61,9 @@ class Make extends StubleCommand
         ],
     ];
 
+    /**
+     * @inheritdoc
+     */
     protected function handle()
     {
         $query = $this->argument('stub');
@@ -132,7 +135,13 @@ class Make extends StubleCommand
         }
     }
 
-    protected function displayStubsFiles(array $stubsFiles)
+    /**
+     * Print stub files to OutputInterface
+     *
+     * @param  array $stubsFiles
+     * @return void
+     */
+    protected function displayStubsFiles(array $stubsFiles): void
     {
         $digitsCount = strlen((string) count($stubsFiles));
 
@@ -146,7 +155,13 @@ class Make extends StubleCommand
         $this->nl();
     }
 
-    protected function displayParameters(array $parameters)
+    /**
+     * Print parameters to OutputInterface
+     *
+     * @param  array $parameters
+     * @return void
+     */
+    protected function displayParameters(array $parameters): void
     {
         $digitsCount = strlen((string) count($parameters));
 
@@ -157,7 +172,15 @@ class Make extends StubleCommand
         }
     }
 
-    protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath)
+    /**
+     * Remove excluded files from stub files
+     *
+     * @param  array $stubsFiles
+     * @param  string $excludes
+     * @param  string $basePath
+     * @return array
+     */
+    protected function excludeFiles(array $stubsFiles, string $excludes, string $basepath): array
     {
         $excludes = array_map(function ($pattern) {
             $pattern = trim($pattern);
@@ -199,7 +222,17 @@ class Make extends StubleCommand
         });
     }
 
-    protected function processFile(Result $result, Stub $stuble, ?bool $skipExists, ?bool $overwrite)
+    /**
+     * Processing generated result
+     * either create, overwrite, skip, or append
+     *
+     * @param  Result $result
+     * @param  Stub $stuble
+     * @param  bool|null $skipExists
+     * @param  bool|null $overwrite
+     * @return void
+     */
+    protected function processFile(Result $result, Stub $stuble, ?bool $skipExists, ?bool $overwrite): void
     {
         $filename = $stuble->filename;
         $content = (string) $result;
@@ -207,7 +240,8 @@ class Make extends StubleCommand
         $append = $result->getAppendOption();
 
         if ($append) {
-            return $this->append($content, $append);
+            $this->append($content, $append);
+            return;
         }
 
         if (! $savePath) {
@@ -218,35 +252,59 @@ class Make extends StubleCommand
         $fileExists = is_file($dest);
 
         if ($fileExists && $skipExists) {
-            return $this->skip($savePath);
+            $this->skip($savePath);
+        } elseif ($fileExists && ! $overwrite && ! $this->confirmOverwrite($savePath)) {
+            $this->skip($savePath);
+        } elseif ($fileExists && $overwrite) {
+            $this->overwrite($dest, $content);
+        } else {
+            $this->create($dest, $content);
         }
-
-        if ($fileExists && ! $overwrite && ! $this->confirmOverwrite($savePath)) {
-            return $this->skip($savePath);
-        }
-
-        return $fileExists
-            ? $this->overwrite($dest, $content)
-            : $this->create($dest, $content);
     }
 
-    protected function confirmOverwrite(string $savePath)
+    /**
+     * Confirm file overwriting
+     *
+     * @param  string $savePath
+     * @return void
+     */
+    protected function confirmOverwrite(string $savePath): void
     {
-        return $this->confirm("<bg=yellow;fg=black> ? </> File '{$savePath}' already exists. Do you want to overwrite it? <fg=magenta>[y/N]</>");
+        $this->confirm("<bg=yellow;fg=black> ? </> File '{$savePath}' already exists. Do you want to overwrite it? <fg=magenta>[y/N]</>");
     }
 
-    protected function skip(string $file)
+    /**
+     * Print skip message
+     *
+     * @param  string $file
+     * @return void
+     */
+    protected function skip(string $file): void
     {
         $this->writeln("<bg=gray;fg=black> skip </> {$file}");
     }
 
-    protected function create(string $file, string $content)
+    /**
+     * Create new file and print message
+     *
+     * @param  string $file
+     * @param  string $content
+     * @return void
+     */
+    protected function create(string $file, string $content): void
     {
         $relativePath = $this->toRelativePath($file);
         $this->save($file, $content);
         $this->writeln("<bg=green;fg=black;> create </> {$relativePath}");
     }
 
+    /**
+     * Overwrite file and print message
+     *
+     * @param  string $file
+     * @param  string $content
+     * @return void
+     */
     protected function overwrite(string $file, string $content)
     {
         $relativePath = $this->toRelativePath($file);
@@ -254,12 +312,25 @@ class Make extends StubleCommand
         $this->writeln("<bg=magenta;fg=black;> overwrite </> {$relativePath}");
     }
 
-    protected function toRelativePath($dest)
+    /**
+     * Convert absolute path to relative path
+     *
+     * @param  string $dest
+     * @return string
+     */
+    protected function toRelativePath(string $dest): string
     {
         return ltrim(str_replace($this->getWorkingPath(), "", $dest), "/");
     }
 
-    protected function dumpResult(Result $result, Stub $stuble)
+    /**
+     * Dump/print result content
+     *
+     * @param  Result $result
+     * @param  Stub $stuble
+     * @return void
+     */
+    protected function dumpResult(Result $result, Stub $stuble): void
     {
         $stub = $stuble->filename;
         $this->nl();
@@ -267,6 +338,11 @@ class Make extends StubleCommand
         $this->text($result->getRawContent());
     }
 
+    /**
+     * Ask parameters' value
+     *
+     * @param  array $stubles
+     */
     protected function askParams(array $stubles)
     {
         $params = $this->collectParams($stubles);
@@ -278,7 +354,13 @@ class Make extends StubleCommand
         return $params;
     }
 
-    protected function collectParams(array $stubles)
+    /**
+     * Collect params from stuble files
+     *
+     * @param  array $stubles
+     * @return array
+     */
+    protected function collectParams(array $stubles): array
     {
         $params = [];
         foreach ($stubles as $stuble) {
@@ -297,13 +379,27 @@ class Make extends StubleCommand
         return $params;
     }
 
-    protected function save(string $dest, string $content)
+    /**
+     * Save file to disk
+     *
+     * @param  string $dest
+     * @param  string $content
+     * @return void
+     */
+    protected function save(string $dest, string $content): void
     {
         Helper::createDirectoryIfNotExists(dirname($dest));
         file_put_contents($dest, $content);
     }
 
-    protected function append(string $text, $appendOption)
+    /**
+     * Append given text to $appendOption['file']
+     *
+     * @param  string $text
+     * @param  array $appendOption
+     * @return void
+     */
+    protected function append(string $text, array $appendOption): void
     {
         $dest = $this->getWorkingPath().'/'.$appendOption['file'];
         $after = $appendOption['after'];
@@ -325,7 +421,15 @@ class Make extends StubleCommand
         $this->text("<bg=cyan;fg=black> append </> {$appendOption['file']}");
     }
 
-    protected function appendBefore($dest, $text, $keyword)
+    /**
+     * Append $text before given $keyword in $dest file
+     *
+     * @param  string $dest
+     * @param  string $text
+     * @param  string $keyword
+     * @return void
+     */
+    protected function appendBefore(string $dest, string $text, string $keyword): void
     {
         $line = $this->findLineNumber($dest, $keyword);
 
@@ -336,7 +440,15 @@ class Make extends StubleCommand
         $this->appendToLine($dest, $text, $line);
     }
 
-    protected function appendAfter($dest, $text, $keyword)
+    /**
+     * Append $text after $keyword in $dest file
+     *
+     * @param  string $dest
+     * @param  string $text
+     * @param  string $keyword
+     * @return void
+     */
+    protected function appendAfter(string $dest, string $text, string $keyword): void
     {
         $line = $this->findLineNumber($dest, $keyword);
 
@@ -347,14 +459,24 @@ class Make extends StubleCommand
         $this->appendToLine($dest, $text, $line + 1);
     }
 
-    protected function appendToLine($dest, $text, $line)
+    /**
+     * Append $text in line $line inside $dest file
+     *
+     * @param  string $dest
+     * @param  string $text
+     * @param  int $line
+     * @return void
+     */
+    protected function appendToLine(string $dest, string $text, int $line): void
     {
         if ($line < 1) {
-            return file_put_contents($dest, $text);
+            file_put_contents($dest, $text);
+            return;
         }
 
         if (! file_exists($dest)) {
-            return file_put_contents($dest, $text);
+            file_put_contents($dest, $text);
+            return;
         }
 
         $lines = explode("\n", file_get_contents($dest));
@@ -362,10 +484,17 @@ class Make extends StubleCommand
 
         $content = implode("\n", $lines);
 
-        return file_put_contents($dest, $content);
+        file_put_contents($dest, $content);
     }
 
-    protected function findLineNumber($dest, $keyword)
+    /**
+     * Get line number containing $keyword in $dest file
+     *
+     * @param  string $dest
+     * @param  string $keyword
+     * @return int
+     */
+    protected function findLineNumber(string $dest, string $keyword): int
     {
         if (! file_exists($dest)) {
             return 0;
@@ -383,7 +512,10 @@ class Make extends StubleCommand
     }
 
     /**
-     * Remove same source_path from stubs files
+     * Remove duplicate source_path from stubs files
+     *
+     * @param  array $stubsFiles
+     * @return array
      */
     public function filterDuplicates(array $stubsFiles)
     {
@@ -396,7 +528,13 @@ class Make extends StubleCommand
         }, []));
     }
 
-    protected function resolveParameters(array $parameters)
+    /**
+     * Resolve parameters' value
+     *
+     * @param  array $parameters
+     * @return array
+     */
+    protected function resolveParameters(array $parameters): array
     {
         $values = [];
         foreach ($parameters as $param) {
@@ -407,7 +545,14 @@ class Make extends StubleCommand
         return $values;
     }
 
-    protected function extractParameter(string $param)
+    /**
+     * Extract parameter from given string
+     *
+     * @param  string $param
+     * @return [string, string]
+     * @throws InvalidArgumentException
+     */
+    protected function extractParameter(string $param): array
     {
         $split = explode(":", $param, 2);
 
@@ -418,7 +563,17 @@ class Make extends StubleCommand
         return $split;
     }
 
-    protected function validateParameters(array $inputParameters, array $stubsParameters)
+    /**
+     * Validate parameters to ensure:
+     * 1. No unused parameter
+     * 2. No missing parameter
+     *
+     * @param  array $inputParameters
+     * @param  array $stubsParameters
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    protected function validateParameters(array $inputParameters, array $stubsParameters): void
     {
         $inputKeys = array_keys($inputParameters);
         $stubsKeys = array_keys($stubsParameters);

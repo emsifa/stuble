@@ -7,18 +7,18 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class Ls extends StubleCommand
 {
-    protected $name = 'ls';
-    protected $description = 'Show list available stubs.';
-    protected $help = '';
+    protected string $name = 'ls';
+    protected string $description = 'Show list available stubs.';
+    protected string $help = '';
 
-    protected $args = [
+    protected array $args = [
         'keyword' => [
             'type' => InputArgument::OPTIONAL,
             'description' => 'Search keyword.',
         ],
     ];
 
-    protected $options = [
+    protected array $options = [
         'global' => [
             'alias' => 'G',
             'description' => 'Show global stubs only.',
@@ -33,6 +33,9 @@ class Ls extends StubleCommand
         ],
     ];
 
+    /**
+     * @inheritdoc
+     */
     protected function handle()
     {
         $keyword = $this->argument('keyword');
@@ -107,7 +110,15 @@ class Ls extends StubleCommand
         }
     }
 
-    protected function showFile($num, $file, $keyword)
+    /**
+     * Print stub file to OutputInterface
+     *
+     * @param  string $num
+     * @param  string $file
+     * @param  string $keyword
+     * @return void
+     */
+    protected function showFile(string $num, string $file, string $keyword): void
     {
         $filetype = $file['source'] == Stuble::KEY_WORKING_PATH ? 'L' : 'G';
         $filepath = $file['source_path'];
@@ -126,7 +137,12 @@ class Ls extends StubleCommand
         $this->writeln("<fg=magenta>{$num}.</> <fg=blue>[{$filetype}]</> {$filepath}");
     }
 
-    public function getFiles()
+    /**
+     * Get stub files from global and local stuble path
+     *
+     * @return array
+     */
+    public function getFiles(): array
     {
         $global = $this->option('global');
         $local = $this->option('local');
@@ -146,7 +162,14 @@ class Ls extends StubleCommand
         return array_values($files);
     }
 
-    protected function filterFiles(array $files, string $keyword)
+    /**
+     * Filter files by given keyword
+     *
+     * @param  array $files
+     * @param  string $keyword
+     * @return array
+     */
+    protected function filterFiles(array $files, string $keyword): array
     {
         return array_filter($files, function ($file) use ($keyword) {
             return is_numeric(strpos(strtolower($file['source_path']), strtolower($keyword)));

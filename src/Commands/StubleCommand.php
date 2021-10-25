@@ -6,15 +6,28 @@ use Emsifa\Stuble\Stuble;
 
 abstract class StubleCommand extends Command
 {
-    protected $stuble;
+    /**
+     * Stuble instance
+     *
+     * @var Stuble
+     */
+    protected Stuble $stuble;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         parent::__construct($this->name);
         $this->stuble = new Stuble();
     }
 
-    public function getWorkingPath()
+    /**
+     * Get absolute working path
+     *
+     * @return string
+     */
+    public function getWorkingPath(): string
     {
         return realpath('.');
     }
