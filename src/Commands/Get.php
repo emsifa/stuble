@@ -5,9 +5,7 @@ namespace Emsifa\Stuble\Commands;
 use Emsifa\Stuble\Helper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use InvalidArgumentException;
 use PharData;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 
 class Get extends StubleCommand
@@ -19,8 +17,8 @@ class Get extends StubleCommand
     protected $args = [
         'repository' => [
             'type' => InputArgument::REQUIRED,
-            'description' => '"username/repository" github'
-        ]
+            'description' => '"username/repository" github',
+        ],
     ];
 
     protected $options = [];
@@ -64,7 +62,7 @@ class Get extends StubleCommand
 
     protected function ensureRepositoryValid(string $repository)
     {
-        if (!preg_match("/^([a-zA-z0-9\._-]+)\/([a-zA-z0-9\._-]+)(\@[a-zA-z0-9\._-]+)?$/", $repository)) {
+        if (! preg_match("/^([a-zA-z0-9\._-]+)\/([a-zA-z0-9\._-]+)(\@[a-zA-z0-9\._-]+)?$/", $repository)) {
             $this->error("Invalid repository name: $repository");
             exit;
         }
@@ -73,7 +71,7 @@ class Get extends StubleCommand
     protected function ensureRepositoryExists(string $repository)
     {
         $url = $this->getRepositoryUrl($repository);
-        if (!$this->isUrlExists($url)) {
+        if (! $this->isUrlExists($url)) {
             $this->error("Repository '{$repository}' doesn't exists.");
             exit;
         }
@@ -82,7 +80,7 @@ class Get extends StubleCommand
     protected function ensureVersionExists(string $repository, string $version)
     {
         $url = $this->getVersionUrl($repository, $version);
-        if (!$this->isUrlExists($url)) {
+        if (! $this->isUrlExists($url)) {
             $this->error("Repository '{$repository}' doesn't have release '{$version}'.");
             exit;
         }
@@ -91,6 +89,7 @@ class Get extends StubleCommand
     protected function extractVersion(string $repository): array
     {
         $split = explode("@", $repository);
+
         return count($split) > 1 ? [$split[0], $split[1]] : [$repository, "master"];
     }
 
@@ -130,6 +129,7 @@ class Get extends StubleCommand
         if (preg_match("/^v\d+(\.\d+(\.\d+)?)?$/", $version)) {
             $version = ltrim($version, "v");
         }
+
         return "{$repoName}-{$version}";
     }
 
@@ -158,6 +158,7 @@ class Get extends StubleCommand
     {
         try {
             $response = $this->getHttpClient()->head($url);
+
             return $response->getStatusCode() === 200;
         } catch (RequestException $e) {
             return false;
@@ -173,9 +174,10 @@ class Get extends StubleCommand
 
     protected function getHttpClient()
     {
-        if (!$this->client) {
+        if (! $this->client) {
             $this->client = new Client();
         }
+
         return $this->client;
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Emsifa\Stuble\Concerns;
 
-use Emsifa\Stuble\Stub;
 use Closure;
+use Emsifa\Stuble\Stub;
 
 trait HelperUtils
 {
@@ -33,11 +33,11 @@ trait HelperUtils
 
         $baseHelpers = [
             'date' => 'date',
-            'put'  => $putHelper
+            'put' => $putHelper,
         ];
 
         foreach ($baseHelpers as $key => $helper) {
-            if (!static::hasGlobalHelper($key)) {
+            if (! static::hasGlobalHelper($key)) {
                 static::globalHelper($key, $helper);
             }
         }
@@ -67,7 +67,7 @@ trait HelperUtils
 
     public function applyHelper(string $key, array $args)
     {
-        if (!isset($this->helpers[$key])) {
+        if (! isset($this->helpers[$key])) {
             throw new \RuntimeException("Helper '{$key}' is not defined.");
         }
 

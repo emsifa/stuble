@@ -4,25 +4,25 @@ namespace Emsifa\Stuble;
 
 class Parser
 {
-    public const TYPE_PARAM            = 100;
-    public const TYPE_HELPER           = 101;
+    public const TYPE_PARAM = 100;
+    public const TYPE_HELPER = 101;
 
-    public const CONTENT               = 0;
-    public const OPEN_TAG              = 1;
-    public const CLOSING_TAG           = 2;
-    public const CLOSE_TAG             = 3;
-    public const PARAM_KEY             = 4;
-    public const OPEN_DEFAULT_VALUE    = 5;
-    public const DEFAULT_VALUE         = 6;
-    public const CLOSE_DEFAULT_VALUE   = 7;
-    public const FILTER_KEY            = 8;
-    public const OPEN_FILTER_PARAMS    = 9;
-    public const PARAM_VALUE           = 10;
-    public const PARAM_STR             = 11;
-    public const CLOSING_PARAM         = 12;
-    public const PARAM_VAR             = 13;
-    public const PARAM_NUM             = 14;
-    public const CLOSE_FILTER_PARAMS   = 15;
+    public const CONTENT = 0;
+    public const OPEN_TAG = 1;
+    public const CLOSING_TAG = 2;
+    public const CLOSE_TAG = 3;
+    public const PARAM_KEY = 4;
+    public const OPEN_DEFAULT_VALUE = 5;
+    public const DEFAULT_VALUE = 6;
+    public const CLOSE_DEFAULT_VALUE = 7;
+    public const FILTER_KEY = 8;
+    public const OPEN_FILTER_PARAMS = 9;
+    public const PARAM_VALUE = 10;
+    public const PARAM_STR = 11;
+    public const CLOSING_PARAM = 12;
+    public const PARAM_VAR = 13;
+    public const PARAM_NUM = 14;
+    public const CLOSE_FILTER_PARAMS = 15;
 
     public static function parse(string $str)
     {
@@ -35,7 +35,7 @@ class Parser
                 'value' => '',
                 'filters' => [],
                 'code' => $code['code'],
-                'args' => []
+                'args' => [],
             ];
 
             foreach ($code['tokens'] as $data) {
@@ -43,25 +43,29 @@ class Parser
                     case static::PARAM_KEY:
                         $parsed['type'] = $data[1];
                         $parsed['key'] = $data[2];
+
                         break;
 
                     case static::DEFAULT_VALUE:
                         $parsed['value'] = $data[1];
+
                         break;
 
                     case static::FILTER_KEY:
                         $parsed['filters'][] = [
                             'key' => $data[1],
-                            'args' => []
+                            'args' => [],
                         ];
+
                         break;
 
                     case static::PARAM_VALUE:
-                        if (!count($parsed['filters'])) {
+                        if (! count($parsed['filters'])) {
                             $parsed['args'][] = ['type' => $data[1], 'value' => $data[2]];
                         } else {
                             $parsed['filters'][count($parsed['filters']) - 1]['args'][] = ['type' => $data[1], 'value' => $data[2]];
                         }
+
                         break;
                 }
             }
@@ -86,7 +90,7 @@ class Parser
         $reset = function () use (&$tags, &$n, &$tok, &$states) {
             $tok = "";
             $tags[$n] = [
-                'tokens' => []
+                'tokens' => [],
             ];
             $states = [static::CONTENT];
         };
@@ -101,7 +105,7 @@ class Parser
         };
 
         foreach ($chars as $i => $char) {
-            $prev = $i > 0 ? $chars[$i-1] : null;
+            $prev = $i > 0 ? $chars[$i - 1] : null;
             $state = $states[count($states) - 1];
             if ($open) {
                 $code .= $char;
@@ -131,6 +135,7 @@ class Parser
                     } else {
                         $reset();
                     }
+
                     break;
 
                 case static::PARAM_KEY:
@@ -154,6 +159,7 @@ class Parser
                     } else {
                         $reset();
                     }
+
                     break;
 
                 case static::OPEN_DEFAULT_VALUE:
@@ -256,6 +262,7 @@ class Parser
                             $tok = "";
                         }
                     }
+
                     break;
 
                 case static::PARAM_NUM:
@@ -341,6 +348,7 @@ class Parser
         }
 
         array_pop($tags);
+
         return $tags;
     }
 

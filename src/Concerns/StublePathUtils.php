@@ -18,7 +18,7 @@ trait StublePathUtils
     {
         $this->paths[$key] = [
             'path' => $path,
-            'priority' => $priority
+            'priority' => $priority,
         ];
     }
 

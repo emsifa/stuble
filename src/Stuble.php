@@ -56,7 +56,7 @@ class Stuble
 
     public function getStubsFilesFromPath(string $pathname): array
     {
-        if (!$this->hasPath($pathname)) {
+        if (! $this->hasPath($pathname)) {
             throw new \UnexpectedValueException("Cannot get stubs files from path '{$pathname}'. Path '{$pathname}' is not available.");
         }
 
@@ -70,11 +70,11 @@ class Stuble
 
     protected function getStubsFilesFromDirectory(string $dir, $baseDir = null)
     {
-        if (!$baseDir) {
+        if (! $baseDir) {
             $baseDir = $dir;
         }
 
-        if (!is_dir($dir) || !is_readable($dir)) {
+        if (! is_dir($dir) || ! is_readable($dir)) {
             return [];
         }
 
@@ -95,14 +95,15 @@ class Stuble
     public function hasStub(string $stub): bool
     {
         $stubPath = $this->findStubPath($stub);
-        return !is_null($stubPath);
+
+        return ! is_null($stubPath);
     }
 
     public function findStub(string $stub): ?Stub
     {
         $stubPath = $this->findStubPath($stub);
 
-        if (!$stubPath) {
+        if (! $stubPath) {
             return null;
         }
 
@@ -119,9 +120,10 @@ class Stuble
     public function makeStub(string $stub): Stub
     {
         $stuble = $this->findStub($stub);
-        if (!$stuble) {
+        if (! $stuble) {
             throw new \UnexpectedValueException("Cannot make stub '{$stub}'. Stub file '{$stub}' doesn't exists.");
         }
+
         return $stuble;
     }
 
@@ -130,7 +132,7 @@ class Stuble
         list($pathnames, $stub) = $this->parsePath($stub);
         foreach ($pathnames as $pathname) {
             $path = $this->getPath($pathname);
-            if (!$path) {
+            if (! $path) {
                 continue;
             }
 
@@ -206,6 +208,7 @@ class Stuble
             $stubsPath = $this->getPath($path).'/stubs';
             if (strpos($file, $stubsPath) === 0) {
                 $dir = $stubsPath;
+
                 break;
             }
         }
@@ -229,10 +232,11 @@ class Stuble
     protected function makeStubPathInfo(string $filepath, string $pathname)
     {
         $path = $this->getPath($pathname);
+
         return [
             'path' => $filepath,
             'source' => $pathname,
-            'source_path' => str_replace($path, '', $filepath)
+            'source_path' => str_replace($path, '', $filepath),
         ];
     }
 }

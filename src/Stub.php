@@ -2,8 +2,6 @@
 
 namespace Emsifa\Stuble;
 
-use Closure;
-
 class Stub
 {
     use Concerns\FilterUtils;
@@ -14,7 +12,7 @@ class Stub
 
     public function __construct(string $filepath)
     {
-        if (!file_exists($filepath)) {
+        if (! file_exists($filepath)) {
             throw new \Exception("Stub file '{$filepath}' not found.");
         }
 
@@ -44,11 +42,11 @@ class Stub
         $values = [];
 
         foreach ($this->params as $param) {
-            if (!$includeHelper && $param['type'] == Parser::TYPE_HELPER) {
+            if (! $includeHelper && $param['type'] == Parser::TYPE_HELPER) {
                 continue;
             }
 
-            if (!isset($values[$param['key']])) {
+            if (! isset($values[$param['key']])) {
                 $values[$param['key']] = $param['value'];
             }
 
@@ -120,13 +118,13 @@ class Stub
         foreach ($params as $i => $param) {
             if (isset($param['args'])) {
                 foreach ($param['args'] as $arg) {
-                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
+                    if ($arg['type'] == Parser::PARAM_VAR && ! in_array($arg['value'], $keys)) {
                         $params[] = [
                             'type' => 'arg',
                             'key' => $arg['value'],
                             'value' => '',
                             'code' => null,
-                            'filters' => []
+                            'filters' => [],
                         ];
                     }
                 }
@@ -134,13 +132,13 @@ class Stub
 
             foreach ($param['filters'] as $filter) {
                 foreach ($filter['args'] as $arg) {
-                    if ($arg['type'] == Parser::PARAM_VAR && !in_array($arg['value'], $keys)) {
+                    if ($arg['type'] == Parser::PARAM_VAR && ! in_array($arg['value'], $keys)) {
                         $params[] = [
                             'type' => 'arg',
                             'key' => $arg['value'],
                             'value' => '',
                             'code' => null,
-                            'filters' => []
+                            'filters' => [],
                         ];
                     }
                 }
@@ -162,6 +160,7 @@ class Stub
                 $results[] = isset($paramsValues[$arg['value']]) ? $paramsValues[$arg['value']] : null;
             }
         }
+
         return $results;
     }
 }

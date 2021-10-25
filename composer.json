@@ -21,5 +21,8 @@
             "Emsifa\\Stuble\\": "src/"
         }
     },
-    "bin": ["bin/stuble"]
+    "bin": ["bin/stuble"],
+    "require-dev": {
+        "symfony/finder": "^5.3"
+    }
 }

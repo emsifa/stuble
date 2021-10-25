@@ -2,10 +2,8 @@
 
 namespace Emsifa\Stuble\Commands;
 
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Emsifa\Stuble\Stuble;
+use Symfony\Component\Console\Input\InputArgument;
 
 class Ls extends StubleCommand
 {
@@ -16,23 +14,23 @@ class Ls extends StubleCommand
     protected $args = [
         'keyword' => [
             'type' => InputArgument::OPTIONAL,
-            'description' => 'Search keyword.'
-        ]
+            'description' => 'Search keyword.',
+        ],
     ];
 
     protected $options = [
         'global' => [
             'alias' => 'G',
-            'description' => 'Show global stubs only.'
+            'description' => 'Show global stubs only.',
         ],
         'local' => [
             'alias' => 'L',
-            'description' => 'Show local stubs (from current directory) only.'
+            'description' => 'Show local stubs (from current directory) only.',
         ],
         'flatten' => [
             'alias' => 'f',
-            'description' => 'Flatten results (not grouped by directory).'
-        ]
+            'description' => 'Flatten results (not grouped by directory).',
+        ],
     ];
 
     protected function handle()
@@ -47,7 +45,7 @@ class Ls extends StubleCommand
 
         $global = $this->option('global');
         $local = $this->option('local');
-        $all = (!$global && !$local) || ($global && $local);
+        $all = (! $global && ! $local) || ($global && $local);
 
         if (empty($files)) {
             $suffix = $keyword ? " with keyword '{$keyword}'" : "";
@@ -81,7 +79,7 @@ class Ls extends StubleCommand
             if ($dir == '.') {
                 $ungroupeds[] = $file;
             } else {
-                if (!isset($groupeds[$dir])) {
+                if (! isset($groupeds[$dir])) {
                     $groupeds[$dir] = [];
                 }
                 $groupeds[$dir][] = $file;
@@ -102,7 +100,7 @@ class Ls extends StubleCommand
         }
 
         foreach ($groupeds as $dir => $files) {
-            if (!$flatten) {
+            if (! $flatten) {
                 print(PHP_EOL);
                 $this->writeln("<fg=green;options=bold>".str_repeat(' ', $d) . "  {$dir}</>");
             }
@@ -139,7 +137,7 @@ class Ls extends StubleCommand
         $global = $this->option('global');
         $local = $this->option('local');
 
-        if ($global && !$this->stuble->hasPath(Stuble::KEY_ENV_PATH)) {
+        if ($global && ! $this->stuble->hasPath(Stuble::KEY_ENV_PATH)) {
             throw new \Exception("Cannot get files from global path. You must set STUBLE_HOME in your environment variable.");
         }
 

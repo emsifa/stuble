@@ -14,6 +14,7 @@ class Filters
         if (! static::$inflector) {
             static::$inflector = InflectorFactory::create()->build();
         }
+
         return static::$inflector;
     }
 
@@ -55,6 +56,7 @@ class Filters
     public static function studly(string $str): string
     {
         $str = ucwords(str_replace(['-', '_'], ' ', $str));
+
         return str_replace(' ', '', $str);
     }
 
@@ -70,6 +72,7 @@ class Filters
             $str = preg_replace('/\s+/u', '', ucwords($str));
             $str = strtolower(preg_replace('/(.)(?=[A-Z])/u', '$1'.$delimiter, $str));
         }
+
         return $str;
     }
 }
